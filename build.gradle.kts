@@ -26,6 +26,18 @@ dependencies {
     testImplementation("com.google.truth:truth:1.4.4")
     testImplementation("io.mockk:mockk:1.14.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // Ktor Client (HTTP Requests)
+    implementation("io.ktor:ktor-client-core:2.3.7")
+    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // CSV Parser
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.8.0")
 }
 
 tasks.test {
