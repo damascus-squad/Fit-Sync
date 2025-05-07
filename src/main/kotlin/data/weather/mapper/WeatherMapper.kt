@@ -13,16 +13,16 @@ fun WeatherDto.toWeatherInfo(): WeatherInfo {
         timezone = timezone.ifBlank { "GMT" },
         weather = Weather(
             temperature = currentWeather.temperature,
-            windSpeed = currentWeather.windspeed,
-            windDirection = currentWeather.winddirection ,
+            windSpeed = currentWeather.windSpeed,
+            windDirection = currentWeather.windDirection ,
             isDay = currentWeather.isDay == 1,
-            weatherCode = currentWeather.weathercode,
+            weatherCode = currentWeather.weatherCode,
             time = currentWeather.time.ifBlank { "" }
         ),
         units = WeatherUnit(
             temperatureUnit = currentWeatherUnits.temperature.ifBlank { "°C" },
-            windSpeedUnit = currentWeatherUnits.windspeed.ifBlank { "km/h" },
-            windDirectionUnit = currentWeatherUnits.winddirection.ifBlank { "°" }
+            windSpeedUnit = currentWeatherUnits.windSpeed.ifBlank { "km/h" },
+            windDirectionUnit = currentWeatherUnits.windDirection.ifBlank { "°" }
         )
     )
 }
