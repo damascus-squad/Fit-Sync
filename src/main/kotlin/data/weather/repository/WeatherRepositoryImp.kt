@@ -13,4 +13,9 @@ class WeatherRepositoryImp(
         val dto = dataSource.getWeatherByCity(cityName, country)
         return dto.toWeatherInfo()
     }
+
+    override suspend fun getWeatherByIp(): WeatherInfo {
+        val dto = dataSource.getWeatherByIp()
+        return dto.toWeatherInfo()
+    }
 }

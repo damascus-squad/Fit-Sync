@@ -26,9 +26,11 @@ dependencies {
 
     testImplementation("com.google.truth:truth:1.4.4")
     testImplementation("io.mockk:mockk:1.14.0")
+    testImplementation("io.ktor:ktor-client-mock:2.3.7")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // Ktor Client (HTTP Requests)
     implementation("io.ktor:ktor-client-core:2.3.7")
