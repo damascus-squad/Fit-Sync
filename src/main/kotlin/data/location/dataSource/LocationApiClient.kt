@@ -22,6 +22,7 @@ class LocationApiClient(
     override suspend fun getCurrentLocation(): AutoLocationDto? {
         val ipUrl = "http://ip-api.com/json/"
         val response = client.get(ipUrl)
-        return json.decodeFromString<AutoLocationDto>(response.bodyAsText())
+        val result = json.decodeFromString<AutoLocationDto>(response.bodyAsText())
+        return result
     }
 }
