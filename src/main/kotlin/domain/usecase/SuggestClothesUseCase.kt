@@ -9,6 +9,10 @@ class SuggestClothesUseCase(
     private val clothesRepository: ClothesRepository
 ) {
     operator fun invoke(currentWeather: CurrentWeather): List<Cloth> {
+        val temp = currentWeather.temperature
+
+        if (temp.isNaN()) return emptyList()
+
         val clothType = when {
             currentWeather.temperature <= -5 -> ClothType.VERY_HEAVY
             currentWeather.temperature in -5.0..5.0 -> ClothType.HEAVY
