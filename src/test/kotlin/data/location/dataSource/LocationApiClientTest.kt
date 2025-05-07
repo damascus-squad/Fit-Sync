@@ -2,23 +2,21 @@ package data.location.dataSource
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
+import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.damascus.data.location.dataSource.LocationApiClient
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import org.junit.jupiter.api.Test
+import kotlin.test.*
 
 class LocationApiClientTest {
 
-    private lateinit var client: HttpClient
     private val json = Json { ignoreUnknownKeys = true }
 
     @Test
     fun `should return location when city is valid`() = runTest {
-        // Given
         val responseJson = """
             {
                 "results": [
@@ -27,56 +25,57 @@ class LocationApiClientTest {
             }
         """.trimIndent()
 
-        client = mockHttpClient(responseJson)
-        val api = LocationApiClient(client, json)
-
-        // When
+        val api = LocationApiClient(mockHttpClient(responseJson))
         val result = api.getCityCoordinates("Cairo", "EG")
 
-        // Then
         assertNotNull(result)
         assertEquals(30.0, result.latitude)
         assertEquals(31.0, result.longitude)
     }
 
     @Test
-    fun `should return null when city not found`() = runTest {
-        // Given
+    fun `should return null when city is not found`() = runTest {
         val responseJson = """{ "results": [] }"""
-        client = mockHttpClient(responseJson)
-        val api = LocationApiClient(client, json)
+        val api = LocationApiClient(mockHttpClient(responseJson))
 
-        // When
-        val result = api.getCityCoordinates("UnknownCity", "ZZ")
+        val result = api.getCityCoordinates("Unknown", "ZZ")
 
-        // Then
         assertNull(result)
     }
 
     @Test
-    fun `should return location when IP lookup succeeds`() = runTest {
-        // Given
+    fun `should return location from IP lookup`() = runTest {
         val ipJson = """{ "lat": 30.0, "lon": 31.0 }"""
-        client = mockHttpClient(ipJson)
-        val api = LocationApiClient(client, json)
+        val api = LocationApiClient(mockHttpClient(ipJson))
 
-        // When
         val result = api.getCurrentLocation()
 
-        // Then
         assertNotNull(result)
         assertEquals(30.0, result.lat)
         assertEquals(31.0, result.lon)
     }
 
+    @Test
+    fun `should throw exception on invalid IP JSON`() = runTest {
+        val invalidIpJson = """{ "unexpected": "value" }"""
+        val api = LocationApiClient(mockHttpClient(invalidIpJson))
+
+        assertFailsWith<Exception> {
+            api.getCurrentLocation()
+        }
+    }
+
     private fun mockHttpClient(responseJson: String): HttpClient {
         return HttpClient(MockEngine) {
+            install(ContentNegotiation) {
+                json(json)
+            }
             engine {
-                addHandler { request ->
+                addHandler {
                     respond(
                         content = responseJson,
                         status = HttpStatusCode.OK,
-                        headers = headersOf("Content-Type", "application/json")
+                        headers = headersOf(HttpHeaders.ContentType, "application/json")
                     )
                 }
             }

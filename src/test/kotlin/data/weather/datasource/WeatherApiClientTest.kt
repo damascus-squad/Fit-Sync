@@ -70,7 +70,7 @@ class WeatherApiClientTest {
     }
 
     @Test
-    fun `should return WeatherDto when city is valid`() = runTest {
+    fun `should return Weather data when city is valid`() = runTest {
         locationDataSource = object : LocationDataSource {
             override suspend fun getCityCoordinates(city: String, country: String) = LocationDto(30.0, 31.0)
             override suspend fun getCurrentLocation() = null
@@ -84,7 +84,7 @@ class WeatherApiClientTest {
     }
 
     @Test
-    fun `getWeatherByCity should throw LocationNotFoundException when city is invalid`() = runTest {
+    fun `should return throw when city is invalid`() = runTest {
         locationDataSource = object : LocationDataSource {
             override suspend fun getCityCoordinates(city: String, country: String) = null
             override suspend fun getCurrentLocation() = null
@@ -98,7 +98,7 @@ class WeatherApiClientTest {
     }
 
     @Test
-    fun `should return WeatherDto when IP location is valid`() = runTest {
+    fun `should return Weather data when IP location is valid`() = runTest {
         locationDataSource = object : LocationDataSource {
             override suspend fun getCityCoordinates(city: String, country: String) = null
             override suspend fun getCurrentLocation() = AutoLocationDto(lat = 30.0, lon = 31.0)
@@ -112,7 +112,7 @@ class WeatherApiClientTest {
     }
 
     @Test
-    fun `should throw LocationNotFoundException when IP fails`() = runTest {
+    fun `should return throw when IP fails`() = runTest {
         locationDataSource = object : LocationDataSource {
             override suspend fun getCityCoordinates(city: String, country: String) = null
             override suspend fun getCurrentLocation() = null

@@ -1,9 +1,11 @@
-package org.damascus.data.weather.mapper
+package data.weather.mapper
 
 import com.google.common.truth.Truth.assertThat
 import org.damascus.data.weather.dto.CurrentWeather
 import org.damascus.data.weather.dto.CurrentWeatherUnits
 import org.damascus.data.weather.dto.WeatherDto
+import org.damascus.data.weather.mapper.getWeatherDescription
+import org.damascus.data.weather.mapper.toWeatherInfo
 import org.junit.jupiter.api.Test
 
 class WeatherMapperTest {

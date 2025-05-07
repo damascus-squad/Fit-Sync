@@ -21,7 +21,7 @@ val appModule = module {
     single {
         HttpClient(CIO) {
             install(ContentNegotiation) {
-                json()
+                json(get())
             }
         }
     }
@@ -30,7 +30,7 @@ val appModule = module {
         Json { ignoreUnknownKeys = true }
     }
 
-    single<LocationDataSource> { LocationApiClient(get(), get()) }
+    single<LocationDataSource> { LocationApiClient(get()) }
     single<WeatherDataSource> { WeatherApiClient(get(), get()) }
 
     single<WeatherRepository> { WeatherRepositoryImp(get()) }
