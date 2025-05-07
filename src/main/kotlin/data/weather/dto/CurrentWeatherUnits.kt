@@ -8,8 +8,8 @@ data class CurrentWeatherUnits(
     val time: String,
     val interval: String,
     val temperature: String,
-    val windspeed: String,
-    val winddirection: String,
+    val windSpeed: String,
+    val windDirection: String,
     @SerialName("is_day") val isDay: String,
-    val weathercode: String
+    val weatherCode: String
 )
