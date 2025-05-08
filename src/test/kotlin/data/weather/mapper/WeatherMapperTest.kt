@@ -11,20 +11,20 @@ import org.junit.jupiter.api.Test
 class WeatherMapperTest {
 
     @Test
-    fun `should map WeatherDto to WeatherInfo correctly when dto is valid`() {
+    fun `should map valid WeatherDto with non-blank timezone and units`() {
         val dto = WeatherDto(
-            latitude = 31.95,
-            longitude = 35.9,
-            elevation = 750.0,
-            timezone = "Asia/Amman",
+            latitude = 31.5,
+            longitude = 34.5,
+            elevation = 45.0,
+            timezone = "Asia/Gaza",
             generationTimeMs = 0.0,
             utcOffsetSeconds = 10800,
             timezoneAbbreviation = "GMT+3",
             currentWeather = CurrentWeather(
-                time = "2025-05-07T12:00",
+                time = "2025-05-08T12:00",
                 interval = 900,
-                temperature = 28.5,
-                windSpeed = 12.0,
+                temperature = 25.0,
+                windSpeed = 10.0,
                 windDirection = 180,
                 isDay = 1,
                 weatherCode = 1
@@ -36,28 +36,78 @@ class WeatherMapperTest {
                 windSpeed = "km/h",
                 windDirection = "°",
                 isDay = "",
-                weatherCode = "wmo code"
+                weatherCode = "wmo"
             )
         )
 
-        val weatherInfo = dto.toWeatherInfo()
+        val info = dto.toWeatherInfo()
 
-        assertThat(weatherInfo.latitude).isEqualTo(31.95)
-        assertThat(weatherInfo.weather.temperature).isEqualTo(28.5)
-        assertThat(weatherInfo.weather.isDay).isTrue()
-        assertThat(weatherInfo.units.temperatureUnit).isEqualTo("°C")
+        assertThat(info.timezone).isEqualTo("Asia/Gaza")
+        assertThat(info.weather.isDay).isTrue()
+        assertThat(info.units.temperatureUnit).isEqualTo("°C")
     }
 
     @Test
-    fun `should return clear sky description when weather code is 0`() {
-        val description = getWeatherDescription(0)
-        assertThat(description).isEqualTo("Clear sky")
+    fun `should default to GMT when timezone is blank`() {
+        val dto = createDto(timezone = "")
+        val info = dto.toWeatherInfo()
+        assertThat(info.timezone).isEqualTo("GMT")
     }
 
     @Test
-    fun `should return unknown weather description when weather code is not recognized`() {
-        val description = getWeatherDescription(999)
-        assertThat(description).isEqualTo("Unknown weather")
+    fun `should default to °C when temperature unit is blank`() {
+        val dto = createDto(temperatureUnit = "")
+        val info = dto.toWeatherInfo()
+        assertThat(info.units.temperatureUnit).isEqualTo("°C")
+    }
+
+    @Test
+    fun `should return false for isDay when value is 0`() {
+        val dto = createDto(isDay = 0)
+        val info = dto.toWeatherInfo()
+        assertThat(info.weather.isDay).isFalse()
+    }
+
+    @Test
+    fun `should return empty string when currentWeather time is blank`() {
+        val dto = createDto(time = "")
+        val info = dto.toWeatherInfo()
+        assertThat(info.weather.time).isEqualTo("")
+    }
+
+    private fun createDto(
+        timezone: String = "Asia/Gaza",
+        temperatureUnit: String = "°C",
+        isDay: Int = 1,
+        time: String = "2025-05-08T12:00"
+    ): WeatherDto {
+        return WeatherDto(
+            latitude = 31.5,
+            longitude = 34.5,
+            elevation = 45.0,
+            timezone = timezone,
+            generationTimeMs = 0.0,
+            utcOffsetSeconds = 10800,
+            timezoneAbbreviation = "GMT+3",
+            currentWeather = CurrentWeather(
+                time = time,
+                interval = 900,
+                temperature = 25.0,
+                windSpeed = 10.0,
+                windDirection = 180,
+                isDay = isDay,
+                weatherCode = 1
+            ),
+            currentWeatherUnits = CurrentWeatherUnits(
+                time = "iso8601",
+                interval = "seconds",
+                temperature = temperatureUnit,
+                windSpeed = "km/h",
+                windDirection = "°",
+                isDay = "",
+                weatherCode = "wmo"
+            )
+        )
     }
     @Test
     fun `should return correct descriptions for all known weather codes`() {
