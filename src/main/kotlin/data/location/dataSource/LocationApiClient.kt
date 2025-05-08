@@ -11,13 +11,21 @@ class LocationApiClient(
     private val client: HttpClient
 ) : LocationDataSource {
 
+    companion object {
+        private const val GEO_BASE_URL = "https://geocoding-api.open-meteo.com/v1/search"
+        private const val IP_BASE_URL = "http://ip-api.com/json/"
+    }
+
     override suspend fun getCityCoordinates(city: String, country: String): LocationDto? {
-        val geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name=$city,$country&count=1"
-        return client.get(geoUrl).body<LocationResultDto>().results.firstOrNull()
+        val response = client.get {
+            url(GEO_BASE_URL)
+            parameter("name", "$city,$country")
+            parameter("count", 1)
+        }
+        return response.body<LocationResultDto>().results.firstOrNull()
     }
 
     override suspend fun getCurrentLocation(): AutoLocationDto? {
-        val ipUrl = "http://ip-api.com/json/"
-        return client.get(ipUrl).body()
+        return client.get(IP_BASE_URL).body()
     }
 }
