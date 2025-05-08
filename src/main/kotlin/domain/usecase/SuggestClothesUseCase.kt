@@ -9,19 +9,34 @@ class SuggestClothesUseCase(
     private val clothesRepository: ClothesRepository
 ) {
     operator fun invoke(currentWeather: CurrentWeather): List<Cloth> {
-        val temp = currentWeather.temperature
+        val temperature = currentWeather.temperature
 
-        if (temp.isNaN()) return emptyList()
+        if (temperature.isNaN()) throw IllegalTemperatureException()
 
-        val clothType = when {
-            currentWeather.temperature <= -5 -> ClothType.VERY_HEAVY
-            currentWeather.temperature in -5.0..5.0 -> ClothType.HEAVY
-            currentWeather.temperature in 6.0..15.0 -> ClothType.MEDIUM
-            currentWeather.temperature in 16.0..24.0 -> ClothType.LIGHT
-            else -> ClothType.VERY_LIGHT
+
+        var clothType = ClothType.VERY_LIGHT
+
+        if (temperature <= VERY_HEAVY) {
+            clothType = ClothType.VERY_HEAVY
+        } else if (temperature <= HEAVY) {
+            clothType = ClothType.HEAVY
+        } else if (temperature <= MEDIUM) {
+            clothType = ClothType.MEDIUM
+        } else if (temperature <= LIGHT) {
+            clothType = ClothType.LIGHT
         }
 
         return clothesRepository.getClothByType(clothType)
     }
+
+    private companion object TemperatureThresholds {
+        const val VERY_HEAVY = 5.0
+        const val HEAVY = 12.5
+        const val MEDIUM = 20.0
+        const val LIGHT = 28.0
+    }
 }
+
+class IllegalTemperatureException() : IllegalArgumentException("NAN: The temperature is not valid")
+
 
