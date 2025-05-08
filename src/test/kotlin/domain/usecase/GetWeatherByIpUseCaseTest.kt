@@ -17,12 +17,12 @@ import kotlin.test.assertFailsWith
 class GetWeatherByIpUseCaseTest {
 
     private lateinit var repository: WeatherRepository
-    private lateinit var useCase: GetWeatherByIpUseCase
+    private lateinit var weatherByIpUseCase: GetWeatherByIpUseCase
 
     @BeforeEach
     fun setup() {
         repository = mockk()
-        useCase = GetWeatherByIpUseCase(repository)
+        weatherByIpUseCase = GetWeatherByIpUseCase(repository)
     }
 
     @Test
@@ -32,34 +32,22 @@ class GetWeatherByIpUseCaseTest {
         coEvery { repository.getWeatherByIp() } returns expected
 
         // When
-        val result = useCase()
+        val result = weatherByIpUseCase()
 
         // Then
         assertEquals(expected, result)
     }
 
     @Test
-    fun `should return correct temperature from IP location`() = runTest {
-        // Given
-        val expected = dummyWeatherInfo()
-        coEvery { repository.getWeatherByIp() } returns expected
-
-        // When
-        val result = useCase()
-
-        // Then
-        assertEquals(26.0, result.weather.temperature)
-    }
-
-    @Test
     fun `should return throws exception when fail`() = runTest {
+        // Given 
         coEvery { repository.getWeatherByIp() } throws LocationNotFoundException("Could not determine location from IP")
 
+        // When & Then
         assertFailsWith<LocationNotFoundException> {
-            useCase()
+        weatherByIpUseCase()
         }
     }
-
 
     private fun dummyWeatherInfo() = WeatherInfo(
         latitude = 30.0,

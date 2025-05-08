@@ -16,12 +16,12 @@ import kotlin.test.assertFailsWith
 
 class GetWeatherUseCaseTest {
     private lateinit var repository: WeatherRepository
-    private lateinit var useCase: GetWeatherUseCase
+    private lateinit var weatherUseCase: GetWeatherUseCase
 
     @BeforeEach
     fun setup() {
         repository = mockk()
-        useCase = GetWeatherUseCase(repository)
+        weatherUseCase = GetWeatherUseCase(repository)
     }
 
     @Test
@@ -31,31 +31,20 @@ class GetWeatherUseCaseTest {
         coEvery { repository.getWeatherByCity("Cairo", "Egypt") } returns expected
 
         //when
-        val result = useCase("Cairo", "Egypt")
+        val result = weatherUseCase("Cairo", "Egypt")
 
         //then
         assertEquals(expected, result)
     }
 
     @Test
-    fun `should return correct temperature when enter city and country`() = runTest {
-        //given
-        val expected = dummyWeatherInfo()
-        coEvery { repository.getWeatherByCity("Caro", "Egypt") } returns expected
-
-        //when
-        val result = useCase("Caro", "Egypt")
-
-        //then
-        assertEquals(26.0, result.weather.temperature)
-    }
-
-    @Test
     fun `should return throws exception when fail`() = runTest {
+        //given
         coEvery { repository.getWeatherByCity("Unknown", "Unknown") } throws LocationNotFoundException("City not found")
 
+        // When & Then
         assertFailsWith<LocationNotFoundException> {
-            useCase("Unknown", "Unknown")
+            weatherUseCase("Unknown", "Unknown")
         }
     }
 

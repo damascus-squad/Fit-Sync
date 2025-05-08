@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AutoLocationDto(
+data class IpLocationDto(
     @SerialName("lat")
     val lat: Double,
     @SerialName("lon")

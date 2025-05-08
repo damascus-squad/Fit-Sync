@@ -133,13 +133,17 @@ class WeatherRepositoryImpTest {
 
     @Test
     fun `should map isDay to false when currentWeather isDay is 0`() = runTest {
+        // Given
         val dto = dummyWeatherDto().copy(
             currentWeather = dummyWeatherDto().currentWeather.copy(isDay = 0)
         )
+
         coEvery { weatherDataSource.getWeatherByCity("NightCity", "EG") } returns dto
 
+        // When
         val result = weatherRepository.getWeatherByCity("NightCity", "EG")
 
+        // Then
         assertThat(result.weather.isDay).isFalse()
     }
 

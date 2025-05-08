@@ -16,6 +16,7 @@ class WeatherApiClient(
     companion object {
         private const val WEATHER_BASE_URL = "https://api.open-meteo.com/v1/forecast"
     }
+
     override suspend fun getWeatherByCity(cityName: String, country: String): WeatherDto {
         val location = locationDataSource.getCityCoordinates(cityName, country)
             ?: throw LocationNotFoundException("City not found: $cityName, $country")
@@ -39,4 +40,5 @@ class WeatherApiClient(
             parameter("current_weather", true)
             parameter("timezone", "auto")
         }.body()
-    }}
+    }
+}

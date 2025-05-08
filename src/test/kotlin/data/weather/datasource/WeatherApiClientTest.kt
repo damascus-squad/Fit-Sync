@@ -1,6 +1,6 @@
 package data.weather.datasource
 
-import org.junit.jupiter.api.Assertions.*
+import com.google.common.truth.Truth.assertThat
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -9,14 +9,18 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.damascus.data.location.dataSource.LocationDataSource
-import org.damascus.data.location.dto.AutoLocationDto
+import org.damascus.data.location.dto.IpLocationDto
 import org.damascus.data.weather.datasource.WeatherApiClient
-import org.damascus.data.weather.dto.*
+import org.damascus.data.weather.dto.LocationDto
 import org.damascus.domain.exception.LocationNotFoundException
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.jupiter.api.BeforeEach
 import kotlin.test.*
 
 class WeatherApiClientTest {
 
+    private val json = Json { ignoreUnknownKeys = true }
     private lateinit var client: HttpClient
     private lateinit var locationDataSource: LocationDataSource
     private lateinit var apiClient: WeatherApiClient
@@ -51,14 +55,14 @@ class WeatherApiClientTest {
         }
     """.trimIndent()
 
-    @BeforeTest
+    @BeforeEach
     fun setup() {
         client = HttpClient(MockEngine) {
             install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
+                json(json)
             }
             engine {
-                addHandler { request ->
+                addHandler {
                     respond(
                         content = dummyWeatherJson,
                         status = HttpStatusCode.OK,
@@ -67,61 +71,62 @@ class WeatherApiClientTest {
                 }
             }
         }
+
+        locationDataSource = mockk()
+        apiClient = WeatherApiClient(client, locationDataSource)
     }
 
     @Test
-    fun `should return Weather data when city is valid`() = runTest {
-        locationDataSource = object : LocationDataSource {
-            override suspend fun getCityCoordinates(city: String, country: String) = LocationDto(30.0, 31.0)
-            override suspend fun getCurrentLocation() = null
-        }
+    fun `should return WeatherDto when city is valid`() = runTest {
+        // Given
+        coEvery { locationDataSource.getCityCoordinates("Cairo", "EG") } returns LocationDto(30.0, 31.0)
 
-        apiClient = WeatherApiClient(client, locationDataSource)
-
+        // When
         val result = apiClient.getWeatherByCity("Cairo", "EG")
+
+        // Then
         assertEquals(30.0, result.latitude)
         assertEquals(26.0, result.currentWeather.temperature)
     }
 
     @Test
-    fun `should return throw when city is invalid`() = runTest {
-        locationDataSource = object : LocationDataSource {
-            override suspend fun getCityCoordinates(city: String, country: String) = null
-            override suspend fun getCurrentLocation() = null
-        }
+    fun `should throw exception when city is invalid`() = runTest {
+        // Given
+        coEvery { locationDataSource.getCityCoordinates("UnknownCity", "XX") } returns null
 
-        apiClient = WeatherApiClient(client, locationDataSource)
-
-        assertFailsWith<LocationNotFoundException> {
+        // When
+        val exception = assertFailsWith<LocationNotFoundException> {
             apiClient.getWeatherByCity("UnknownCity", "XX")
         }
+
+        // Then
+        assertThat(exception.message).isEqualTo("City not found: UnknownCity, XX")
     }
 
     @Test
-    fun `should return Weather data when IP location is valid`() = runTest {
-        locationDataSource = object : LocationDataSource {
-            override suspend fun getCityCoordinates(city: String, country: String) = null
-            override suspend fun getCurrentLocation() = AutoLocationDto(lat = 30.0, lon = 31.0)
-        }
+    fun `should return WeatherDto when IP is valid`() = runTest {
+        // Given
+        coEvery { locationDataSource.getCurrentLocation() } returns IpLocationDto(30.0, 31.0)
 
-        apiClient = WeatherApiClient(client, locationDataSource)
-
+        // When
         val result = apiClient.getWeatherByIp()
+
+        // Then
         assertEquals(31.0, result.longitude)
         assertEquals("Africa/Cairo", result.timezone)
     }
 
     @Test
-    fun `should return throw when IP fails`() = runTest {
-        locationDataSource = object : LocationDataSource {
-            override suspend fun getCityCoordinates(city: String, country: String) = null
-            override suspend fun getCurrentLocation() = null
-        }
+    fun `should throw exception when IP is invalid`() = runTest {
+        // Given
+        coEvery { locationDataSource.getCurrentLocation() } returns null
 
-        apiClient = WeatherApiClient(client, locationDataSource)
-
-        assertFailsWith<LocationNotFoundException> {
+        // When
+        val exception = assertFailsWith<LocationNotFoundException> {
             apiClient.getWeatherByIp()
         }
+
+        // Then
+        assertThat(exception.message).isEqualTo("Could not determine location from IP")
     }
 }

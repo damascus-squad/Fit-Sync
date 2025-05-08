@@ -7,6 +7,8 @@ import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.data.weather.mapper.getWeatherDescription
 import org.damascus.data.weather.mapper.toWeatherInfo
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class WeatherMapperTest {
 
@@ -109,43 +111,41 @@ class WeatherMapperTest {
             )
         )
     }
-    @Test
-    fun `should return correct descriptions for all known weather codes`() {
-        val cases = mapOf(
-            0 to "Clear sky",
-            1 to "Mainly clear",
-            2 to "Partly cloudy",
-            3 to "Overcast",
-            45 to "Fog",
-            48 to "Depositing rime fog",
-            51 to "Light drizzle",
-            53 to "Moderate drizzle",
-            55 to "Heavy drizzle",
-            56 to "Light freezing drizzle",
-            57 to "Heavy freezing drizzle",
-            61 to "Light rain",
-            63 to "Moderate rain",
-            65 to "Heavy rain",
-            66 to "Light freezing rain",
-            67 to "Heavy freezing rain",
-            71 to "Light snow",
-            73 to "Moderate snow",
-            75 to "Heavy snow",
-            77 to "Snow grains",
-            80 to "Light rain showers",
-            81 to "Moderate rain showers",
-            82 to "Heavy rain showers",
-            85 to "Light snow showers",
-            86 to "Heavy snow showers",
-            95 to "Thunderstorm",
-            96 to "Thunderstorm with light hail",
-            99 to "Thunderstorm with heavy hail"
-        )
 
-        for ((code, expected) in cases) {
-            val result = getWeatherDescription(code)
-            assertThat(result).isEqualTo(expected)
-        }
+    @ParameterizedTest
+    @CsvSource(
+        "0, Clear sky",
+        "1, Mainly clear",
+        "2, Partly cloudy",
+        "3, Overcast",
+        "45, Fog",
+        "48, Depositing rime fog",
+        "51, Light drizzle",
+        "53, Moderate drizzle",
+        "55, Heavy drizzle",
+        "56, Light freezing drizzle",
+        "57, Heavy freezing drizzle",
+        "61, Light rain",
+        "63, Moderate rain",
+        "65, Heavy rain",
+        "66, Light freezing rain",
+        "67, Heavy freezing rain",
+        "71, Light snow",
+        "73, Moderate snow",
+        "75, Heavy snow",
+        "77, Snow grains",
+        "80, Light rain showers",
+        "81, Moderate rain showers",
+        "82, Heavy rain showers",
+        "85, Light snow showers",
+        "86, Heavy snow showers",
+        "95, Thunderstorm",
+        "96, Thunderstorm with light hail",
+        "99, Thunderstorm with heavy hail",
+        "999, Unknown weather"
+    )
+    fun `should return correct weather description for each code`(code: Int, expected: String) {
+        val description = getWeatherDescription(code)
+        assertThat(description).isEqualTo(expected)
     }
-
 }

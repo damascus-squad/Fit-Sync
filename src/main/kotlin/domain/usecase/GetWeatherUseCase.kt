@@ -6,9 +6,9 @@ import org.damascus.domain.repository.WeatherRepository
 
 
 class GetWeatherUseCase(
-    private val repository: WeatherRepository
+    private val weatherRepository: WeatherRepository
 ) {
     suspend operator fun invoke(city: String, country: String): WeatherInfo {
-        return repository.getWeatherByCity(city, country)
+        return weatherRepository.getWeatherByCity(city, country)
     }
 }
