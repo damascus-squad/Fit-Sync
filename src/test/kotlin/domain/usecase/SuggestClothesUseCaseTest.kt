@@ -2,20 +2,12 @@ package domain.usecase
 
 import io.mockk.every
 import io.mockk.mockk
-import org.checkerframework.checker.units.qual.Temperature
-import org.damascus.data.clothes.datasource.ClothesDataSource
 import org.damascus.data.clothes.datasource.ClothesDataSourceImp
 import org.damascus.data.clothes.repository.ClothesRepositoryImpl
-import org.damascus.data.weather.dto.CurrentWeather
 import org.damascus.domain.exception.IllegalTemperatureException
-import org.damascus.domain.model.Cloth
-import org.damascus.domain.model.ClothType
-import org.damascus.domain.model.Weather
-import org.damascus.domain.model.WeatherInfo
-import org.damascus.domain.model.WeatherUnit
+import org.damascus.domain.model.*
 import org.damascus.domain.usecase.SuggestClothesUseCase
-
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -73,7 +65,7 @@ class SuggestClothesUseCaseTest {
         temperatureUnit: String
     ) {
         // Given
-        val input = helper(temperature, temperatureUnit)
+        val input = createWeatherInfoHelper(temperature, temperatureUnit)
 
         // When
         val result = suggestClothesUseCase(input)
@@ -94,7 +86,7 @@ class SuggestClothesUseCaseTest {
         temperatureUnit: String
     ) {
         // Given
-        val input = helper(temperature, temperatureUnit)
+        val input = createWeatherInfoHelper(temperature, temperatureUnit)
 
         // When
         val result = suggestClothesUseCase(input)
@@ -115,7 +107,7 @@ class SuggestClothesUseCaseTest {
         temperatureUnit: String
     ) {
         // Given
-        val input = helper(temperature, temperatureUnit)
+        val input = createWeatherInfoHelper(temperature, temperatureUnit)
 
         // When
         val result = suggestClothesUseCase(input)
@@ -136,7 +128,7 @@ class SuggestClothesUseCaseTest {
         temperatureUnit: String
     ) {
         // Given
-        val input = helper(temperature, temperatureUnit)
+        val input = createWeatherInfoHelper(temperature, temperatureUnit)
 
         // When
         val result = suggestClothesUseCase(input)
@@ -149,7 +141,7 @@ class SuggestClothesUseCaseTest {
     @Test
     fun `getClothesByType should return list of type VERY_LIGHT when temperature within very light range`() {
         // Given
-        val input = helper(32.0, "C")
+        val input = createWeatherInfoHelper(32.0, "C")
 
         // When
         val result = suggestClothesUseCase(input)
@@ -161,7 +153,7 @@ class SuggestClothesUseCaseTest {
     @Test
     fun `getClothesByType should throw exception when temperature is NAN`() {
         // Given
-        val input = helper(Double.NaN, "C")
+        val input = createWeatherInfoHelper(Double.NaN, "C")
 
         // When & Then
         assertThrows<IllegalTemperatureException> {
@@ -171,7 +163,7 @@ class SuggestClothesUseCaseTest {
 
 }
 
-fun helper(temperature: Double, temperatureUnit: String): WeatherInfo {
+fun createWeatherInfoHelper(temperature: Double, temperatureUnit: String): WeatherInfo {
     return WeatherInfo(
         latitude = 1.1,
         longitude = 1.1,
