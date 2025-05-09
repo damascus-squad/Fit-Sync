@@ -3,6 +3,7 @@ package presentation.ui
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.model.ClothType
 import org.damascus.presentation.io.Printer
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ClothesSuggesterByIPCLITest {
 
     private lateinit var printer: Printer

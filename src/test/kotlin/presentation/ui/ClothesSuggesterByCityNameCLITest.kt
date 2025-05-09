@@ -4,6 +4,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.model.ClothType
 import org.damascus.domain.usecase.GetWeatherUseCase
@@ -13,6 +14,7 @@ import presentation.io.InputReader
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ClothesSuggesterByCityNameCLITest {
 
     private lateinit var printer: Printer
