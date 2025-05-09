@@ -21,8 +21,8 @@ fun WeatherDto.toDomain(): WeatherInfo {
         ),
         units = WeatherUnit(
             temperatureUnit = currentWeatherUnitsDto.temperature.ifBlank { "°C" },
-            windSpeedUnit = currentWeatherUnitsDto.windSpeed,
-            windDirectionUnit = currentWeatherUnitsDto.windDirection
+            windSpeedUnit = currentWeatherUnitsDto.windSpeed.ifBlank { "km/h" },
+            windDirectionUnit = currentWeatherUnitsDto.windDirection.ifBlank { "°" }
         )
     )
 
