@@ -7,19 +7,17 @@ class ClothesDataSourceImp : ClothesDataSource {
 
 
     private val getAllClothes: List<Cloth> by lazy {
-        listOf(
-            *createVeryHeavyClothes().toTypedArray(),
-            *createHeavyClothes().toTypedArray(),
-            *createMediumClothes().toTypedArray(),
-            *createLightClothes().toTypedArray(),
-            *createVeryLightClothes().toTypedArray()
-        )
+        buildList {
+            addAll(createVeryHeavyClothes())
+            addAll(createHeavyClothes())
+            addAll(createMediumClothes())
+            addAll(createLightClothes())
+            addAll(createVeryLightClothes())
+        }
     }
 
     override fun getAllClothes(): List<Cloth> = getAllClothes
-    override fun getClothesByType(clothType: ClothType): List<Cloth> {
-        return getAllClothes.filter { it.type == clothType }
-    }
+
 
 
     private fun createVeryHeavyClothes() = listOf(

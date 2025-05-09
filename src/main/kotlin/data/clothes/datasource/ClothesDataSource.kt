@@ -4,5 +4,4 @@ import org.damascus.domain.model.Cloth
 import org.damascus.domain.model.ClothType
 interface ClothesDataSource {
     fun getAllClothes(): List<Cloth>
-    fun getClothesByType(clothType: ClothType): List<Cloth>
 }
