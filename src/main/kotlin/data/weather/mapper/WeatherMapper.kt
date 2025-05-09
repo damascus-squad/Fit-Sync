@@ -5,6 +5,7 @@ import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
 
+// TODO should delete , merged in @WeatherCacheEntryConverter in line 61
 fun WeatherDto.toWeatherInfo(): WeatherInfo {
     return WeatherInfo(
         latitude = latitude ,
