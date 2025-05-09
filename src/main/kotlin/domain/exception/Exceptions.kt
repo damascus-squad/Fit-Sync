@@ -1,3 +1,4 @@
 package org.damascus.domain.exception
 
-class WeatherNotFoundException : Exception("No weather found")
+
+class LocationNotFoundException(message: String) : Exception(message)
