@@ -22,27 +22,27 @@ class SuggestClothesUseCaseTest {
     fun setup() {
         clothesRepository = mockk()
 
-        every { clothesRepository.getClothsByType(ClothType.VERY_HEAVY) } returns listOf(
+        every { clothesRepository.getClothesByType(ClothType.VERY_HEAVY) } returns listOf(
             Cloth(name = "Winter Jacket", type = ClothType.VERY_HEAVY),
             Cloth(name = "Thick Sweater", type = ClothType.VERY_HEAVY)
         )
 
-        every { clothesRepository.getClothsByType(ClothType.HEAVY) } returns listOf(
+        every { clothesRepository.getClothesByType(ClothType.HEAVY) } returns listOf(
             Cloth(name = "Light Jacket", type = ClothType.HEAVY),
             Cloth(name = "Sweater", type = ClothType.HEAVY)
         )
 
-        every { clothesRepository.getClothsByType(ClothType.MEDIUM) } returns listOf(
+        every { clothesRepository.getClothesByType(ClothType.MEDIUM) } returns listOf(
             Cloth(name = "Long Sleeve Shirt", type = ClothType.MEDIUM),
             Cloth(name = "Light Sweater", type = ClothType.MEDIUM)
         )
 
-        every { clothesRepository.getClothsByType(ClothType.LIGHT) } returns listOf(
+        every { clothesRepository.getClothesByType(ClothType.LIGHT) } returns listOf(
             Cloth(name = "T-Shirt", type = ClothType.LIGHT),
             Cloth(name = "Short Sleeve Shirt", type = ClothType.LIGHT)
         )
 
-        every { clothesRepository.getClothsByType(ClothType.VERY_LIGHT) } returns listOf(
+        every { clothesRepository.getClothesByType(ClothType.VERY_LIGHT) } returns listOf(
             Cloth(name = "Tank Top", type = ClothType.VERY_LIGHT),
             Cloth(name = "Light T-Shirt", type = ClothType.VERY_LIGHT)
         )
