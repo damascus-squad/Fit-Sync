@@ -33,7 +33,7 @@ class SuggestClothesUseCase(
             }
         }
 
-        return clothesRepository.getClothByType(clothType)
+        return clothesRepository.getClothsByType(clothType)
     }
 
     private companion object TemperatureThresholdsCelsius {

@@ -2,10 +2,9 @@ package domain.usecase
 
 import io.mockk.every
 import io.mockk.mockk
-import org.damascus.data.clothes.datasource.ClothesDataSourceImp
-import org.damascus.data.clothes.repository.ClothesRepositoryImpl
 import org.damascus.domain.exception.IllegalTemperatureException
 import org.damascus.domain.model.*
+import org.damascus.domain.repository.ClothesRepository
 import org.damascus.domain.usecase.SuggestClothesUseCase
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -17,35 +16,33 @@ import kotlin.test.Test
 class SuggestClothesUseCaseTest {
 
     private lateinit var suggestClothesUseCase: SuggestClothesUseCase
-    private lateinit var clothesDataSource: ClothesDataSourceImp
-    private lateinit var clothesRepository: ClothesRepositoryImpl
+    private lateinit var clothesRepository: ClothesRepository
 
     @BeforeEach
     fun setup() {
-        clothesDataSource = mockk()
-        clothesRepository = ClothesRepositoryImpl(clothesDataSource)
+        clothesRepository = mockk()
 
-        every { clothesDataSource.getClothesByType(ClothType.VERY_HEAVY) } returns listOf(
+        every { clothesRepository.getClothsByType(ClothType.VERY_HEAVY) } returns listOf(
             Cloth(name = "Winter Jacket", type = ClothType.VERY_HEAVY),
             Cloth(name = "Thick Sweater", type = ClothType.VERY_HEAVY)
         )
 
-        every { clothesDataSource.getClothesByType(ClothType.HEAVY) } returns listOf(
+        every { clothesRepository.getClothsByType(ClothType.HEAVY) } returns listOf(
             Cloth(name = "Light Jacket", type = ClothType.HEAVY),
             Cloth(name = "Sweater", type = ClothType.HEAVY)
         )
 
-        every { clothesDataSource.getClothesByType(ClothType.MEDIUM) } returns listOf(
+        every { clothesRepository.getClothsByType(ClothType.MEDIUM) } returns listOf(
             Cloth(name = "Long Sleeve Shirt", type = ClothType.MEDIUM),
             Cloth(name = "Light Sweater", type = ClothType.MEDIUM)
         )
 
-        every { clothesDataSource.getClothesByType(ClothType.LIGHT) } returns listOf(
+        every { clothesRepository.getClothsByType(ClothType.LIGHT) } returns listOf(
             Cloth(name = "T-Shirt", type = ClothType.LIGHT),
             Cloth(name = "Short Sleeve Shirt", type = ClothType.LIGHT)
         )
 
-        every { clothesDataSource.getClothesByType(ClothType.VERY_LIGHT) } returns listOf(
+        every { clothesRepository.getClothsByType(ClothType.VERY_LIGHT) } returns listOf(
             Cloth(name = "Tank Top", type = ClothType.VERY_LIGHT),
             Cloth(name = "Light T-Shirt", type = ClothType.VERY_LIGHT)
         )

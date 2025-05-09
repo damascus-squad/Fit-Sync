@@ -9,7 +9,7 @@ class ClothesRepositoryImpl(
     private val dataSource: ClothesDataSource,
 ) : ClothesRepository {
 
-    override fun getClothByType(clothType: ClothType): List<Cloth> {
+    override fun getClothsByType(clothType: ClothType): List<Cloth> {
         return dataSource.getAllClothes().filter { it.type == clothType }
     }
 
