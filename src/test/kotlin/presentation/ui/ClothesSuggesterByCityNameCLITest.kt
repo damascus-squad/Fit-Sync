@@ -35,13 +35,14 @@ class ClothesSuggesterByCityNameCLITest {
         )
     }
 
+
     @Test
     fun `should display suggested clothes when inputs are valid`() {
         // given
         val city = "London"
         val country = "UK"
         val fakeClothes = listOf(
-            Cloth(name = "Jacket", type = ClothType.HEAVY),
+            Cloth(name = "🧥Jacket", type = ClothType.HEAVY),
         )
 
         every { inputReader.readString(any()) } returns city andThen country
@@ -52,7 +53,7 @@ class ClothesSuggesterByCityNameCLITest {
 
         // then
         verify {
-            printer.displayLn(match { it.contains("1-Jacket") })
+            printer.displayLn(match { it.contains("1-🧥Jacket") })
         }
     }
 
@@ -75,6 +76,7 @@ class ClothesSuggesterByCityNameCLITest {
             printer.displayLn(match { it.contains("Error: $errorMessage") })
         }
     }
+
 
     @Test
     fun `should display error when suggestClothesUseCase throws exception`() {
