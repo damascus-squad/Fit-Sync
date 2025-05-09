@@ -1,6 +1,7 @@
 package data.clothes.datasource
 
 import org.damascus.data.clothes.datasource.ClothesDataSourceImp
+import org.damascus.data.clothes.repository.ClothesRepositoryImpl
 import org.damascus.domain.model.ClothType
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -10,7 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource
 class ClothesDataSourceImpTest {
 
     private val dataSource = ClothesDataSourceImp()
-
+    private val ClothesRepository =ClothesRepositoryImpl(dataSource)
     @ParameterizedTest(name = "should return {1} items for type {0}")
     @CsvSource(
         "VERY_HEAVY, 6",
@@ -23,7 +24,8 @@ class ClothesDataSourceImpTest {
         // Given is already covered by CsvSource input
 
         // When
-        val result = dataSource.getClothesByType(type)
+        val a =ClothesRepository
+        val result = ClothesRepository.getClothesByType(type)
 
         // Then
         assertEquals(expectedCount, result.size)
@@ -39,7 +41,7 @@ class ClothesDataSourceImpTest {
     )
     fun `should return only items of the specified type`(type: ClothType) {
         // When
-        val result = dataSource.getClothesByType(type)
+        val result = ClothesRepository.getClothesByType(type)
 
         // Then
         assertTrue(result.all { it.type == type })
@@ -49,7 +51,7 @@ class ClothesDataSourceImpTest {
     @CsvSource("28") // Total items: 6 + 5 + 6 + 5 + 6 = 28
     fun `should return all clothes correctly`(expectedTotal: Int) {
         // When
-        val allClothes = dataSource.getAllClothes()
+        val allClothes = ClothesRepository.getAllClothes()
 
         // Then
         assertEquals(expectedTotal, allClothes.size)
