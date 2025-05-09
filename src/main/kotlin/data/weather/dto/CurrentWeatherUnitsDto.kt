@@ -4,9 +4,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CurrentWeatherUnits(
+data class CurrentWeatherUnitsDto(
+    @SerialName("time")
     val time: String,
+    @SerialName("interval")
     val interval: String,
+    @SerialName("temperature")
     val temperature: String,
     @SerialName("windspeed")
     val windSpeed: String,

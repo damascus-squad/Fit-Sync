@@ -79,7 +79,7 @@ class LocationApiClientTest {
         assertNotNull(result)
         assertEquals(
             expected = IpLocationDto(30.0, 31.0),
-            actual = IpLocationDto(result.lat, result.lon)
+            actual = IpLocationDto(result.latitude, result.longitude)
         )
     }
 

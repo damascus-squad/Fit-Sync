@@ -16,7 +16,7 @@ data class WeatherDto(
     val timezoneAbbreviation: String,
     val elevation: Double,
     @SerialName("current_weather_units")
-    val currentWeatherUnits: CurrentWeatherUnits,
+    val currentWeatherUnitsDto: CurrentWeatherUnitsDto,
     @SerialName("current_weather")
-    val currentWeather: CurrentWeather
+    val currentWeatherDto: CurrentWeatherDto
 )

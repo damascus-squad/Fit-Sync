@@ -1,11 +1,11 @@
 package data.weather.mapper
 
 import com.google.common.truth.Truth.assertThat
-import org.damascus.data.weather.dto.CurrentWeather
-import org.damascus.data.weather.dto.CurrentWeatherUnits
+import org.damascus.data.weather.dto.CurrentWeatherDto
+import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
 import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.data.weather.mapper.getWeatherDescription
-import org.damascus.data.weather.mapper.toWeatherInfo
+import org.damascus.data.weather.mapper.toDomain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -14,11 +14,12 @@ class WeatherMapperTest {
 
     @Test
     fun `should use timezone as is when it's not blank`() {
-
         // Given
         val dto = createDto(timezone = "Asia/Gaza")
+
         // When
-        val info = dto.toWeatherInfo()
+        val info = dto.toDomain()
+
         //Then
         assertThat(info.timezone).isEqualTo("Asia/Gaza")
     }
@@ -27,8 +28,10 @@ class WeatherMapperTest {
     fun `should convert isDay = 1 to true`() {
         // Given
         val dto = createDto(isDay = 1)
+
         // When
-        val info = dto.toWeatherInfo()
+        val info = dto.toDomain()
+
         // Then
         assertThat(info.weather.isDay).isTrue()
     }
@@ -37,8 +40,10 @@ class WeatherMapperTest {
     fun `should use °C as temperature unit when present`() {
         // Given
         val dto = createDto(temperatureUnit = "°C")
+
         // When
-        val info = dto.toWeatherInfo()
+        val info = dto.toDomain()
+
         // Then
         assertThat(info.units.temperatureUnit).isEqualTo("°C")
     }
@@ -48,22 +53,21 @@ class WeatherMapperTest {
     fun `should default to GMT when timezone is blank`() {
         //Given
         val dto = createDto(timezone = "")
+
         //When
+        val info = dto.toDomain()
 
-        val info = dto.toWeatherInfo()
         //Then
-
         assertThat(info.timezone).isEqualTo("GMT")
     }
 
     @Test
     fun `should default to °C when temperature unit is blank`() {
         //Given
-
         val dto = createDto(temperatureUnit = "")
-        //When
 
-        val info = dto.toWeatherInfo()
+        //When
+        val info = dto.toDomain()
 
         //Then
         assertThat(info.units.temperatureUnit).isEqualTo("°C")
@@ -72,26 +76,24 @@ class WeatherMapperTest {
     @Test
     fun `should return false for isDay when value is 0`() {
         //Given
-
         val dto = createDto(isDay = 0)
+
         //When
+        val info = dto.toDomain()
 
-        val info = dto.toWeatherInfo()
         //Then
-
         assertThat(info.weather.isDay).isFalse()
     }
 
     @Test
     fun `should return empty string when currentWeather time is blank`() {
         //Given
-
         val dto = createDto(time = "")
+
         //When
+        val info = dto.toDomain()
 
-        val info = dto.toWeatherInfo()
         //Then
-
         assertThat(info.weather.time).isEqualTo("")
     }
 
@@ -109,7 +111,7 @@ class WeatherMapperTest {
             generationTimeMs = 0.0,
             utcOffsetSeconds = 10800,
             timezoneAbbreviation = "GMT+3",
-            currentWeather = CurrentWeather(
+            currentWeatherDto = CurrentWeatherDto(
                 time = time,
                 interval = 900,
                 temperature = 25.0,
@@ -118,7 +120,7 @@ class WeatherMapperTest {
                 isDay = isDay,
                 weatherCode = 1
             ),
-            currentWeatherUnits = CurrentWeatherUnits(
+            currentWeatherUnitsDto = CurrentWeatherUnitsDto(
                 time = "iso8601",
                 interval = "seconds",
                 temperature = temperatureUnit,

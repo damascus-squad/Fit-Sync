@@ -5,24 +5,24 @@ import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
 
-fun WeatherDto.toWeatherInfo(): WeatherInfo {
+fun WeatherDto.toDomain(): WeatherInfo {
     return WeatherInfo(
         latitude = latitude,
         longitude = longitude,
         elevation = elevation,
         timezone = timezone.ifBlank { "GMT" },
         weather = Weather(
-            temperature = currentWeather.temperature,
-            windSpeed = currentWeather.windSpeed,
-            windDirection = currentWeather.windDirection,
-            isDay = currentWeather.isDay == 1,
-            weatherCode = currentWeather.weatherCode,
-            time = currentWeather.time.ifBlank { "" }
+            temperature = currentWeatherDto.temperature,
+            windSpeed = currentWeatherDto.windSpeed,
+            windDirection = currentWeatherDto.windDirection,
+            isDay = currentWeatherDto.isDay == 1,
+            weatherCode = currentWeatherDto.weatherCode,
+            time = currentWeatherDto.time.ifBlank { "" }
         ),
         units = WeatherUnit(
-            temperatureUnit = currentWeatherUnits.temperature.ifBlank { "°C" },
-            windSpeedUnit = currentWeatherUnits.windSpeed,
-            windDirectionUnit = currentWeatherUnits.windDirection
+            temperatureUnit = currentWeatherUnitsDto.temperature.ifBlank { "°C" },
+            windSpeedUnit = currentWeatherUnitsDto.windSpeed,
+            windDirectionUnit = currentWeatherUnitsDto.windDirection
         )
     )
 

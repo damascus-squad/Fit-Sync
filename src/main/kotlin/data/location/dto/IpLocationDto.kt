@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class IpLocationDto(
     @SerialName("lat")
-    val lat: Double,
+    val latitude: Double,
     @SerialName("lon")
-    val lon: Double
+    val longitude: Double
 )

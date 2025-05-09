@@ -5,10 +5,10 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.damascus.data.weather.datasource.WeatherDataSource
-import org.damascus.data.weather.dto.CurrentWeather
-import org.damascus.data.weather.dto.CurrentWeatherUnits
+import org.damascus.data.weather.dto.CurrentWeatherDto
+import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
 import org.damascus.data.weather.dto.WeatherDto
-import org.damascus.data.weather.mapper.toWeatherInfo
+import org.damascus.data.weather.mapper.toDomain
 import org.damascus.data.weather.repository.WeatherRepositoryImp
 import org.damascus.domain.exception.LocationNotFoundException
 import org.damascus.domain.model.Weather
@@ -39,7 +39,7 @@ class WeatherRepositoryImpTest {
         val result = weatherRepository.getWeatherByCity("Cairo", "EG")
 
         // Then
-        assertThat(result).isEqualTo(dto.toWeatherInfo())
+        assertThat(result).isEqualTo(dto.toDomain())
     }
 
 
@@ -69,7 +69,7 @@ class WeatherRepositoryImpTest {
         val result = weatherRepository.getWeatherByIp()
 
         // Then
-        assertThat(result).isEqualTo(dto.toWeatherInfo())
+        assertThat(result).isEqualTo(dto.toDomain())
     }
 
 
@@ -89,7 +89,7 @@ class WeatherRepositoryImpTest {
         // Given
         val incompleteDto = dummyWeatherDto().copy(
             timezone = "",
-            currentWeather = CurrentWeather(
+            currentWeatherDto = CurrentWeatherDto(
                 temperature = 0.0,
                 windSpeed = 0.0,
                 time = "",
@@ -98,7 +98,7 @@ class WeatherRepositoryImpTest {
                 isDay = 0,
                 weatherCode = -1
             ),
-            currentWeatherUnits = dummyWeatherDto().currentWeatherUnits.copy(
+            currentWeatherUnitsDto = dummyWeatherDto().currentWeatherUnitsDto.copy(
                 temperature = ""
             )
         )
@@ -135,7 +135,7 @@ class WeatherRepositoryImpTest {
     fun `should map isDay to false when currentWeather isDay is 0`() = runTest {
         // Given
         val dto = dummyWeatherDto().copy(
-            currentWeather = dummyWeatherDto().currentWeather.copy(isDay = 0)
+            currentWeatherDto = dummyWeatherDto().currentWeatherDto.copy(isDay = 0)
         )
 
         coEvery { weatherDataSource.getWeatherByCity("NightCity", "EG") } returns dto
@@ -155,7 +155,7 @@ class WeatherRepositoryImpTest {
         timezone = "Africa/Cairo",
         timezoneAbbreviation = "EET",
         elevation = 10.0,
-        currentWeatherUnits = CurrentWeatherUnits(
+        currentWeatherUnitsDto = CurrentWeatherUnitsDto(
             time = "iso8601",
             interval = "int",
             temperature = "°C",
@@ -164,7 +164,7 @@ class WeatherRepositoryImpTest {
             isDay = "bool",
             weatherCode = "int"
         ),
-        currentWeather = CurrentWeather(
+        currentWeatherDto = CurrentWeatherDto(
             temperature = 26.0,
             windSpeed = 12.0,
             time = "2025-05-05T12:00",

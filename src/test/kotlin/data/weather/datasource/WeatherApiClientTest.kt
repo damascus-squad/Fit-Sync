@@ -15,8 +15,8 @@ import org.damascus.data.location.dataSource.LocationApiClient
 import org.damascus.data.location.dataSource.LocationDataSource
 import org.damascus.data.location.dto.IpLocationDto
 import org.damascus.data.weather.datasource.WeatherApiClient
-import org.damascus.data.weather.dto.CurrentWeather
-import org.damascus.data.weather.dto.CurrentWeatherUnits
+import org.damascus.data.weather.dto.CurrentWeatherDto
+import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
 import org.damascus.data.weather.dto.LocationDto
 import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.domain.exception.LocationNotFoundException
@@ -148,7 +148,7 @@ class WeatherApiClientTest {
     @Test
     fun `should serialize and deserialize CurrentWeather`() {
         // Given
-        val weather = CurrentWeather(
+        val weather = CurrentWeatherDto(
             time = "2025-05-05T12:00",
             interval = 1,
             temperature = 26.0,
@@ -160,7 +160,7 @@ class WeatherApiClientTest {
 
         // When
         val jsonString = json.encodeToString(weather)
-        val deserialized = json.decodeFromString<CurrentWeather>(jsonString)
+        val deserialized = json.decodeFromString<CurrentWeatherDto>(jsonString)
 
         // Then
         assertEquals(weather, deserialized)
@@ -169,7 +169,7 @@ class WeatherApiClientTest {
     @Test
     fun `should serialize and deserialize CurrentWeatherUnits`() {
         // Given
-        val units = CurrentWeatherUnits(
+        val units = CurrentWeatherUnitsDto(
             time = "iso8601",
             interval = "int",
             temperature = "°C",
@@ -181,7 +181,7 @@ class WeatherApiClientTest {
 
         // When
         val jsonString = json.encodeToString(units)
-        val deserialized = json.decodeFromString<CurrentWeatherUnits>(jsonString)
+        val deserialized = json.decodeFromString<CurrentWeatherUnitsDto>(jsonString)
 
         // Then
         assertEquals(units, deserialized)
@@ -198,7 +198,7 @@ class WeatherApiClientTest {
             timezone = "Africa/Cairo",
             timezoneAbbreviation = "EET",
             elevation = 10.0,
-            currentWeatherUnits = CurrentWeatherUnits(
+            currentWeatherUnitsDto = CurrentWeatherUnitsDto(
                 time = "iso8601",
                 interval = "int",
                 temperature = "°C",
@@ -207,7 +207,7 @@ class WeatherApiClientTest {
                 isDay = "bool",
                 weatherCode = "int"
             ),
-            currentWeather = CurrentWeather(
+            currentWeatherDto = CurrentWeatherDto(
                 time = "2025-05-05T12:00",
                 interval = 1,
                 temperature = 26.0,
