@@ -6,6 +6,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.damascus.data.location.dataSource.LocationApiClient
 import org.damascus.data.location.dto.IpLocationDto
@@ -93,6 +94,20 @@ class LocationApiClientTest {
             api.getCurrentLocation()
         }
     }
+
+    @Test
+    fun `should serialize and deserialize LocationDto`() {
+        // Given
+        val location = LocationDto(30.0, 31.0)
+
+        // When
+        val jsonString = json.encodeToString(location)
+        val deserialized = json.decodeFromString<LocationDto>(jsonString)
+
+        // Then
+        assertEquals(location, deserialized)
+    }
+
     private fun mockHttpClient(responseJson: String): HttpClient {
         return HttpClient(MockEngine) {
             install(ContentNegotiation) {
