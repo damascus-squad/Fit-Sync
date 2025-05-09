@@ -39,7 +39,7 @@ class GetWeatherByIpUseCaseTest {
     }
 
     @Test
-    fun `should return throws exception when fail`() = runTest {
+    fun `should throw LocationNotFoundException when IP location fails`() = runTest {
         // Given 
         coEvery { repository.getWeatherByIp() } throws LocationNotFoundException("Could not determine location from IP")
 
