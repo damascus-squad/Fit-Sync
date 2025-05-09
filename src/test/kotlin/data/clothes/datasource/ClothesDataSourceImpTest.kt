@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.CsvSource
 class ClothesDataSourceImpTest {
 
     private val dataSource = ClothesDataSourceImp()
-    private val ClothesRepository =ClothesRepositoryImpl(dataSource)
+    private val clothesRepository =ClothesRepositoryImpl(dataSource)
     @ParameterizedTest(name = "should return {1} items for type {0}")
     @CsvSource(
         "VERY_HEAVY, 6",
@@ -24,8 +24,8 @@ class ClothesDataSourceImpTest {
         // Given is already covered by CsvSource input
 
         // When
-        val a =ClothesRepository
-        val result = ClothesRepository.getClothesByType(type)
+        
+        val result = clothesRepository.getClothesByType(type)
 
         // Then
         assertEquals(expectedCount, result.size)
@@ -41,7 +41,7 @@ class ClothesDataSourceImpTest {
     )
     fun `should return only items of the specified type`(type: ClothType) {
         // When
-        val result = ClothesRepository.getClothesByType(type)
+        val result = clothesRepository.getClothesByType(type)
 
         // Then
         assertTrue(result.all { it.type == type })
@@ -51,7 +51,7 @@ class ClothesDataSourceImpTest {
     @CsvSource("28") // Total items: 6 + 5 + 6 + 5 + 6 = 28
     fun `should return all clothes correctly`(expectedTotal: Int) {
         // When
-        val allClothes = ClothesRepository.getAllClothes()
+        val allClothes = clothesRepository.getAllClothes()
 
         // Then
         assertEquals(expectedTotal, allClothes.size)
