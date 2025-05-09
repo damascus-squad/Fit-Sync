@@ -1,42 +1,53 @@
 package org.damascus.domain.usecase
 
-import org.damascus.data.weather.dto.CurrentWeather
+import org.damascus.domain.exception.IllegalTemperatureException
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.model.ClothType
+import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.repository.ClothesRepository
 
 class SuggestClothesUseCase(
     private val clothesRepository: ClothesRepository
 ) {
-    operator fun invoke(currentWeather: CurrentWeather): List<Cloth> {
-        val temperature = currentWeather.temperature
+    operator fun invoke(currentWeather: WeatherInfo): List<Cloth> {
+        val temperature = currentWeather.weather.temperature
+        val weatherUnit = currentWeather.units.temperatureUnit
 
         if (temperature.isNaN()) throw IllegalTemperatureException()
 
+        var clothType: ClothType
 
-        var clothType = ClothType.VERY_LIGHT
-
-        if (temperature <= VERY_HEAVY) {
-            clothType = ClothType.VERY_HEAVY
-        } else if (temperature <= HEAVY) {
-            clothType = ClothType.HEAVY
-        } else if (temperature <= MEDIUM) {
-            clothType = ClothType.MEDIUM
-        } else if (temperature <= LIGHT) {
-            clothType = ClothType.LIGHT
+        if (weatherUnit == "C") {
+            clothType = when {
+                temperature <= VERY_HEAVY_TEMPERATURE_THRESHOLDS_C -> ClothType.VERY_HEAVY
+                temperature <= HEAVY_TEMPERATURE_THRESHOLDS_C -> ClothType.HEAVY
+                temperature <= MEDIUM_TEMPERATURE_THRESHOLDS_C -> ClothType.MEDIUM
+                temperature <= LIGHT_TEMPERATURE_THRESHOLDS_C -> ClothType.LIGHT
+                else -> ClothType.VERY_LIGHT
+            }
+        } else {
+            clothType = when {
+                temperature <= VERY_HEAVY_TEMPERATURE_THRESHOLDS_F -> ClothType.VERY_HEAVY
+                temperature <= HEAVY_TEMPERATURE_THRESHOLDS_F -> ClothType.HEAVY
+                temperature <= MEDIUM_TEMPERATURE_THRESHOLDS_F -> ClothType.MEDIUM
+                temperature <= LIGHT_TEMPERATURE_THRESHOLDS_F -> ClothType.LIGHT
+                else -> ClothType.VERY_LIGHT
+            }
         }
 
         return clothesRepository.getClothByType(clothType)
     }
 
-    private companion object TemperatureThresholds {
-        const val VERY_HEAVY = 5.0
-        const val HEAVY = 12.5
-        const val MEDIUM = 20.0
-        const val LIGHT = 28.0
+    private companion object TemperatureThresholdsCelsius {
+        const val VERY_HEAVY_TEMPERATURE_THRESHOLDS_C = 5.0
+        const val HEAVY_TEMPERATURE_THRESHOLDS_C = 12.5
+        const val MEDIUM_TEMPERATURE_THRESHOLDS_C = 20.0
+        const val LIGHT_TEMPERATURE_THRESHOLDS_C = 28.0
+
+        const val VERY_HEAVY_TEMPERATURE_THRESHOLDS_F = 41.0
+        const val HEAVY_TEMPERATURE_THRESHOLDS_F = 54.5
+        const val MEDIUM_TEMPERATURE_THRESHOLDS_F = 68.0
+        const val LIGHT_TEMPERATURE_THRESHOLDS_F = 82.4
+
     }
 }
-
-class IllegalTemperatureException() : IllegalArgumentException("NAN: The temperature is not valid")
-
-
