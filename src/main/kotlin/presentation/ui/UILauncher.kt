@@ -1,5 +1,5 @@
 package presentation.ui
 
 interface UILauncher {
-    fun start()
+    suspend fun start()
 }

@@ -1,6 +1,6 @@
 package org.damascus.presentation.io
 
-interface Printer {
+interface ConsoleDisplay {
     fun display(input: Any? = "")
     fun displayLn(input: Any? = "\n")
 }

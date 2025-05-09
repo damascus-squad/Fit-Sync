@@ -1,8 +1,8 @@
 package presentation.io
 
-import org.damascus.presentation.io.Printer
+import org.damascus.presentation.io.ConsoleDisplay
 
-class ConsolePrinter : Printer {
+class ConsolePrinter : ConsoleDisplay {
     override fun display(input: Any?) {
         print(input)
     }

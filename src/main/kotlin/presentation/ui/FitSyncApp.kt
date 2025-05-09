@@ -1,29 +1,29 @@
 package org.damascus.presentation.ui
 
-import org.damascus.presentation.io.Printer
+import org.damascus.presentation.io.ConsoleDisplay
 import presentation.TerminalColor
 import presentation.io.InputReader
-import presentation.ui.ClothesSuggesterByCityNameCLI
+import presentation.ui.ClothesSuggesterByCityNameCli
 import presentation.ui.UILauncher
 import presentation.withStyle
 
 class FitSyncApp(
-    private val printer: Printer,
+    private val printer: ConsoleDisplay,
     private val inputReader: InputReader,
-    private val clothesSuggesterByCityNameCLI: ClothesSuggesterByCityNameCLI,
-    private val clothesSuggesterByIPCLI: ClothesSuggesterByIPCLI
+    private val clothesSuggesterByCityNameCli: ClothesSuggesterByCityNameCli,
+    private val clothesSuggesterByIpCli: ClothesSuggesterByIpCli
 ) : UILauncher {
 
-    override fun start() {
+    override suspend fun start() {
         showMenu(
             uiActionList = listOf(
                 UiAction(
                     name = "🌆 Suggest Clothes Based on City",
-                    action = { clothesSuggesterByCityNameCLI.start() }
+                    action = { clothesSuggesterByCityNameCli.start() }
                 ),
                 UiAction(
                     name = "🌍 Suggest Clothes Based on Your IP Location",
-                    action = { clothesSuggesterByIPCLI.start() }
+                    action = { clothesSuggesterByIpCli.start() }
                 ),
                 UiAction(
                     name = "❌ Exit",
@@ -33,12 +33,12 @@ class FitSyncApp(
         )
     }
 
-    private fun showMenu(uiActionList: List<UiAction>) {
+    private suspend fun showMenu(uiActionList: List<UiAction>) {
         while (true) {
 
-            printer.displayLn("=".repeat(40))
+            printer.displayLn("=".repeat(35).withStyle(TerminalColor.Blue))
             printer.displayLn("\n👚 Welcome to FitSync App! 👕\n".withStyle(TerminalColor.Green))
-            printer.displayLn("=".repeat(40))
+            printer.displayLn("=".repeat(35).withStyle(TerminalColor.Blue))
 
             uiActionList.forEachIndexed { index, action ->
                 val choice = (index + 1).toString().padStart(2, '0')

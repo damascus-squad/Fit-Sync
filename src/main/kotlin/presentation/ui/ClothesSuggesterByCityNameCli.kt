@@ -3,38 +3,44 @@ package presentation.ui
 import kotlinx.coroutines.*
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.usecase.GetWeatherUseCase
-import org.damascus.presentation.io.Printer
+import org.damascus.domain.usecase.SuggestClothesUseCase
+import org.damascus.presentation.io.ConsoleDisplay
 import presentation.TerminalColor
 import presentation.io.InputReader
 import presentation.withStyle
 
-class ClothesSuggesterByCityNameCLI(
-    private val printer: Printer,
+class ClothesSuggesterByCityNameCli(
+    private val printer: ConsoleDisplay,
     private val inputReader: InputReader,
     private val getWeatherUseCase: GetWeatherUseCase,
-    private val suggestClothesUseCase: SuggestClothesUseCase
+    private val suggestClothesUseCase: SuggestClothesUseCase,
 ) : UILauncher {
 
     private var suggestedClothes: List<Cloth>? = null
-    private lateinit var loadingScope: CoroutineScope
-
-    override fun start() {
+    private val loadingScope = CoroutineScope(Dispatchers.Default)
+    override suspend fun start() {
         val cityName = inputReader.readString("🌆 What's your city? ")
         val countryName = inputReader.readString("🌍 Which country? ")
 
-        loadingScope = CoroutineScope(Dispatchers.Default)
         showLoading()
 
-        runBlocking {
-            suggestClothesByCityAndCountry(cityName, countryName)
-
-            suggestedClothes?.let { cloths ->
-                showClothingSuggestions(cloths)
+        suggestClothesByCityAndCountry(
+            cityName,
+            countryName,
+            onSuccess = { clothes ->
+                suggestedClothes = clothes
+                printer.display("\r".withStyle(TerminalColor.Reset))
+                showClothingSuggestions(clothes)
+                loadingScope.cancel()
+            },
+            onFailure = { message ->
+                printer.display("\r".withStyle(TerminalColor.Reset))
+                printer.displayLn("⚠️ Error: $message".withStyle(TerminalColor.Red))
+                loadingScope.cancel()
             }
-
-            loadingScope.cancel()
-        }
+        )
     }
+
 
     private fun showLoading() {
         loadingScope.launch {
@@ -45,17 +51,25 @@ class ClothesSuggesterByCityNameCLI(
                     delay(250)
                 }
             }
+
         }
+
     }
 
-    private suspend fun suggestClothesByCityAndCountry(cityName: String, countryName: String) {
+    private suspend fun suggestClothesByCityAndCountry(
+        cityName: String,
+        countryName: String,
+        onSuccess: (clothes: List<Cloth>) -> Unit,
+        onFailure: (message: String) -> Unit
+    ) {
         try {
+
             val dailyWeather = getWeatherUseCase(cityName, countryName)
-            suggestedClothes = suggestClothesUseCase(dailyWeather)
+
+            val clothes = suggestClothesUseCase(dailyWeather)
+            onSuccess(clothes)
         } catch (exception: Exception) {
-            printer.display("\r".withStyle(TerminalColor.Reset))
-            suggestedClothes = null
-            printer.displayLn("⚠️ Error: ${exception.message}".withStyle(TerminalColor.Red))
+            onFailure("${exception.message} An unexpected error occurred.".withStyle(TerminalColor.Reset))
         }
     }
 
