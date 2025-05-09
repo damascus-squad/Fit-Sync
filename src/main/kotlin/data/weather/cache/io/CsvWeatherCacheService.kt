@@ -1,7 +1,6 @@
-package org.damascus.data.weather.datasource
+package org.damascus.data.weather.cache.io
 
-import org.damascus.data.weather.cache.io.CsvFileOperations
-import org.damascus.data.weather.cache.io.OpenCsvFileOperations
+import org.damascus.data.weather.datasource.WeatherCacheService
 import org.damascus.data.weather.dto.WeatherCacheCsvEntry
 import org.damascus.data.weather.mapper.WeatherCacheEntryConverter
 import org.damascus.domain.model.LocationCoordinate
@@ -18,7 +17,6 @@ class CsvWeatherCacheService(
     private val fileOps: CsvFileOperations = OpenCsvFileOperations(),
     private val coordinateTolerance: Double = 0.01
 ) : WeatherCacheService {
-
     private fun findMatchingRowData(locationCoordinate: LocationCoordinate): Array<String>? {
         if (!fileOps.fileExists(csvFilePath)) {
             return null
@@ -51,7 +49,6 @@ class CsvWeatherCacheService(
             }
             .firstOrNull()
     }
-
     override fun saveToCache(weatherInfo: WeatherInfo) {
         val csvEntry = converter.weatherInfoToEntry(weatherInfo)
         val rowData = converter.entryToCsvRow(csvEntry)
@@ -64,13 +61,11 @@ class CsvWeatherCacheService(
         }
         fileOps.appendRow(csvFilePath, rowData)
     }
-
     override fun getFromCache(locationCoordinate: LocationCoordinate): WeatherInfo? {
         val matchingRowData = findMatchingRowData(locationCoordinate) ?: return null
         val csvEntry = converter.csvRowToEntry(matchingRowData) ?: return null
         return converter.entryToWeatherInfo(csvEntry)
     }
-
     override fun getValidFromCache(locationCoordinate: LocationCoordinate, maxAgeMinutes: Long): WeatherInfo? {
         val matchingRowData = findMatchingRowData(locationCoordinate) ?: return null
         val csvEntry = converter.csvRowToEntry(matchingRowData) ?: return null
@@ -91,7 +86,6 @@ class CsvWeatherCacheService(
             null
         }
     }
-
     override fun clearCache() {
         fileOps.clearFileContent(csvFilePath, WeatherCacheCsvEntry.HEADERS.toTypedArray())
     }

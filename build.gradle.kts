@@ -35,9 +35,11 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // CSV Parser
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.8.0")
+    implementation("com.opencsv:opencsv:5.9")
 }
 
 tasks.test {

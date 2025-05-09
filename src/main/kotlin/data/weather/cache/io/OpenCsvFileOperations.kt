@@ -13,7 +13,6 @@ class OpenCsvFileOperations : CsvFileOperations {
     override fun fileExists(filePath: String): Boolean {
         return File(filePath).exists()
     }
-
     override fun readAllRows(filePath: String, skipHeader: Boolean): List<Array<String>> {
         val file = File(filePath)
         if (!file.exists() || !file.canRead()) return emptyList()
@@ -33,7 +32,6 @@ class OpenCsvFileOperations : CsvFileOperations {
             return emptyList()
         }
     }
-
     override fun appendRow(filePath: String, row: Array<String>) {
         try {
             FileWriter(filePath, true).use { fileWriter ->
@@ -43,10 +41,9 @@ class OpenCsvFileOperations : CsvFileOperations {
                 }
             }
         } catch (e: IOException) {
-
+            System.err.println("Error appending row to CSV '$filePath': ${e.message}")
         }
     }
-
     override fun writeHeader(filePath: String, header: Array<String>) {
         try {
             FileWriter(filePath, false).use { fileWriter ->
@@ -56,10 +53,9 @@ class OpenCsvFileOperations : CsvFileOperations {
                 }
             }
         } catch (e: IOException) {
-
+            System.err.println("Error writing header to CSV '$filePath': ${e.message}")
         }
     }
-
     override fun clearFileContent(filePath: String, header: Array<String>?): Boolean {
         try {
             FileWriter(filePath, false).use { fileWriter ->
