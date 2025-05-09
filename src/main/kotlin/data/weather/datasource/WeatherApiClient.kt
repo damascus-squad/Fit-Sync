@@ -27,6 +27,7 @@ class WeatherApiClient(
 
         return getWeatherByLocation(ipLocation.toLocationDto())
     }
+
     private fun IpLocationDto.toLocationDto(): LocationDto {
         return LocationDto(
             latitude = this.latitude,
