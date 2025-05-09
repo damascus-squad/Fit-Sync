@@ -1,13 +1,5 @@
 package org.damascus.di
 
-import org.damascus.data.clothes.repository.ClothesRepositoryImpl
-import org.damascus.data.weather.repository.WeatherRepositoryImp
-import org.damascus.domain.repository.ClothesRepository
-import org.damascus.domain.repository.WeatherRepository
-import org.damascus.domain.usecase.GetWeatherUseCase
-import org.damascus.domain.usecase.SuggestClothesUseCase
-import org.koin.dsl.module
-
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -71,14 +63,4 @@ val appModule = module {
     single { FitSyncApp(get(), get(), get(), get()) }
 
 
-    //IO
-    single<Printer> { ConsolePrinter() }
-    single<InputReader> { ConsoleReader() }
-
-    //UI
-    single { ClothesSuggesterByCityNameCLI(get(), get(), get(), get()) }
-    single { ClothesSuggesterByIPCLI(get(), get(), get()) }
-
-    //app
-    single { FitSyncApp(get(), get(), get(), get()) }
 }
