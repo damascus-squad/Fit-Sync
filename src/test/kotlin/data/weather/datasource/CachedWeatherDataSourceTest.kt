@@ -3,13 +3,14 @@ package data.weather.datasource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
+import org.damascus.data.weather.cache.io.WeatherCacheService
 import org.damascus.data.weather.datasource.CachedWeatherDataSource
 import org.damascus.data.weather.datasource.WeatherCacheService
 import org.damascus.data.weather.datasource.WeatherDataSource
 import org.damascus.data.weather.dto.CurrentWeather
 import org.damascus.data.weather.dto.CurrentWeatherUnits
 import org.damascus.data.weather.dto.WeatherDto
-import org.damascus.data.weather.mapper.WeatherCacheEntryConverter
+import org.damascus.data.weather.mapper.WeatherDataConverter
 import org.damascus.domain.model.LocationCoordinate
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
@@ -21,7 +22,7 @@ class CachedWeatherDataSourceTest {
 
  private lateinit var mockApiClient: WeatherDataSource
  private lateinit var mockCacheService: WeatherCacheService
- private lateinit var converter: WeatherCacheEntryConverter // Real instance for testing conversion logic
+ private lateinit var converter: WeatherDataConverter // Real instance for testing conversion logic
 
  private lateinit var cachedWeatherDataSource: CachedWeatherDataSource
 
@@ -51,7 +52,7 @@ class CachedWeatherDataSourceTest {
  fun setup() {
   mockApiClient = mockk()
   mockCacheService = mockk()
-  converter = WeatherCacheEntryConverter()
+  converter = WeatherDataConverter()
 
   cachedWeatherDataSource = CachedWeatherDataSource(
    apiClient = mockApiClient,

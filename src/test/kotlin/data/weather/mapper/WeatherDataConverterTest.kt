@@ -3,7 +3,7 @@ package org.damascus.data.weather.mapper
 import com.google.common.truth.Truth.assertThat
 import org.damascus.data.weather.dto.CurrentWeather
 import org.damascus.data.weather.dto.CurrentWeatherUnits
-import org.damascus.data.weather.dto.WeatherCacheCsvEntry
+import org.damascus.data.weather.dto.CsvWeatherModel
 import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
@@ -14,13 +14,13 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-class WeatherCacheEntryConverterTest {
+class WeatherDataConverterTest {
 
- private lateinit var converter: WeatherCacheEntryConverter
+ private lateinit var converter: WeatherDataConverter
 
  @BeforeEach
  fun setUp() {
-  converter = WeatherCacheEntryConverter()
+  converter = WeatherDataConverter()
  }
 
  private val testWeatherInfo = WeatherInfo(
@@ -83,7 +83,7 @@ class WeatherCacheEntryConverterTest {
  )
 
  private val testTimestampString = "2023-01-01T12:00:00"
- private val testCacheEntry = WeatherCacheCsvEntry(
+ private val testCacheEntry = CsvWeatherModel(
   latitude = 10.0, longitude = 20.0, elevation = 5.0, timezone = "Europe/Berlin",
   temperature = 25.5, windSpeed = 15.2, windDirection = 180, isDay = true, weatherCode = 800,
   time = "2023-10-28T10:00:00Z", temperatureUnit = "°C", windSpeedUnit = "km/h",
@@ -94,7 +94,7 @@ class WeatherCacheEntryConverterTest {
  fun `weatherInfoToEntry - converts correctly and generates timestamp`() {
   val result = converter.weatherInfoToEntry(testWeatherInfo)
 
-  val expectedEntry = WeatherCacheCsvEntry(
+  val expectedEntry = CsvWeatherModel(
    latitude = testWeatherInfo.latitude,
    longitude = testWeatherInfo.longitude,
    elevation = testWeatherInfo.elevation,
@@ -125,7 +125,7 @@ class WeatherCacheEntryConverterTest {
  fun `weatherInfoToEntry - uses provided timestamp`() {
   val specificTimestamp = "2024-01-01T00:00:00"
   val result = converter.weatherInfoToEntry(testWeatherInfo, specificTimestamp)
-  val expectedEntry = WeatherCacheCsvEntry(
+  val expectedEntry = CsvWeatherModel(
    latitude = testWeatherInfo.latitude,
    longitude = testWeatherInfo.longitude,
    elevation = testWeatherInfo.elevation,
@@ -325,7 +325,7 @@ class WeatherCacheEntryConverterTest {
    "10.0", "20.0", "5.0", "Europe/Berlin", "25.5", "15.2", "180", "true", "800",
    "2023-10-28T10:00:00Z", "°C", "km/h", "°", testTimestampString
   )
-  assertThat(result.size).isEqualTo(WeatherCacheCsvEntry.HEADERS.size)
+  assertThat(result.size).isEqualTo(CsvWeatherModel.HEADERS.size)
   assertThat(result).isEqualTo(expectedArray)
  }
 
@@ -337,7 +337,7 @@ class WeatherCacheEntryConverterTest {
   )
   val result = converter.csvRowToEntry(validRow)
 
-  val expectedEntry = WeatherCacheCsvEntry(
+  val expectedEntry = CsvWeatherModel(
    latitude = 10.5,
    longitude = 20.5,
    elevation = 5.5,

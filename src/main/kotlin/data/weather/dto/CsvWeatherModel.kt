@@ -3,7 +3,7 @@ package org.damascus.data.weather.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WeatherCacheCsvEntry(
+data class CsvWeatherModel(
     val latitude: Double,
     val longitude: Double,
     val elevation: Double,

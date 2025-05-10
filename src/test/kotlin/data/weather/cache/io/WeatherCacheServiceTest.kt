@@ -7,10 +7,10 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.verify
-import org.damascus.data.weather.cache.io.CsvFileOperations
-import org.damascus.data.weather.cache.io.CsvWeatherCacheService
-import org.damascus.data.weather.dto.WeatherCacheCsvEntry
-import org.damascus.data.weather.mapper.WeatherCacheEntryConverter
+import org.damascus.data.weather.cache.io.FileOperations
+import org.damascus.data.weather.cache.io.WeatherCacheService
+import org.damascus.data.weather.dto.CsvWeatherModel
+import org.damascus.data.weather.mapper.WeatherDataConverter
 import org.damascus.domain.model.LocationCoordinate
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class CsvWeatherCacheServiceTest {
-    private lateinit var mockFileOps: CsvFileOperations
-    private lateinit var realConverter: WeatherCacheEntryConverter
-    private lateinit var cacheService: CsvWeatherCacheService
+class WeatherCacheServiceTest {
+    private lateinit var mockFileOps: FileOperations
+    private lateinit var realConverter: WeatherDataConverter
+    private lateinit var cacheService: WeatherCacheService
 
     private val testCsvFilePath = "test_cache.csv"
     private val testTolerance = 0.01
@@ -48,12 +48,12 @@ class CsvWeatherCacheServiceTest {
     @BeforeEach
     fun setUp() {
         mockFileOps = mockk()
-        realConverter = WeatherCacheEntryConverter()
+        realConverter = WeatherDataConverter()
 
         mockkStatic(LocalDateTime::class)
         every { LocalDateTime.now() } returns fixedTestTime
 
-        cacheService = CsvWeatherCacheService(
+        cacheService = WeatherCacheService(
             csvFilePath = testCsvFilePath,
             converter = realConverter,
             fileOps = mockFileOps,
@@ -65,7 +65,7 @@ class CsvWeatherCacheServiceTest {
     fun `saveToCache - when file does not exist - writes header then appends row`() {
         val expectedEntry = realConverter.weatherInfoToEntry(testWeatherInfo)
         val expectedRowData = realConverter.entryToCsvRow(expectedEntry)
-        val headersArray = WeatherCacheCsvEntry.HEADERS.toTypedArray()
+        val headersArray = CsvWeatherModel.HEADERS.toTypedArray()
 
         every { mockFileOps.fileExists(testCsvFilePath) } returns false
         every { mockFileOps.writeHeader(testCsvFilePath, eq(headersArray)) } just runs
@@ -82,7 +82,7 @@ class CsvWeatherCacheServiceTest {
     fun `saveToCache - when file exists but is empty - writes header then appends row`() {
         val expectedEntry = realConverter.weatherInfoToEntry(testWeatherInfo)
         val expectedRowData = realConverter.entryToCsvRow(expectedEntry)
-        val headersArray = WeatherCacheCsvEntry.HEADERS.toTypedArray()
+        val headersArray = CsvWeatherModel.HEADERS.toTypedArray()
 
         every { mockFileOps.fileExists(testCsvFilePath) } returns true
         every { mockFileOps.readAllRows(testCsvFilePath, false) } returns emptyList()
@@ -108,7 +108,7 @@ class CsvWeatherCacheServiceTest {
                 testCsvFilePath,
                 false
             )
-        } returns listOf(WeatherCacheCsvEntry.HEADERS.toTypedArray())
+        } returns listOf(CsvWeatherModel.HEADERS.toTypedArray())
         every { mockFileOps.appendRow(testCsvFilePath, eq(expectedRowData)) } just runs
 
         cacheService.saveToCache(testWeatherInfo)
@@ -279,7 +279,7 @@ class CsvWeatherCacheServiceTest {
 
     @Test
     fun `clearCache - calls fileOps_clearFileContent`() {
-        val headersArray = WeatherCacheCsvEntry.HEADERS.toTypedArray()
+        val headersArray = CsvWeatherModel.HEADERS.toTypedArray()
         every { mockFileOps.clearFileContent(testCsvFilePath, headersArray) } returns true
 
         cacheService.clearCache()
@@ -304,7 +304,7 @@ class CsvWeatherCacheServiceTest {
 
     @Test
     fun `findMatchingRowData - when row has non-numeric latitude - filters out row`() {
-        val nonNumericLatRow = Array(WeatherCacheCsvEntry.HEADERS.size) { "valid_data" }
+        val nonNumericLatRow = Array(CsvWeatherModel.HEADERS.size) { "valid_data" }
         nonNumericLatRow[0] = "not_a_latitude"
         nonNumericLatRow[1] = testLocation.longitude.toString()
 
@@ -324,7 +324,7 @@ class CsvWeatherCacheServiceTest {
 
     @Test
     fun `findMatchingRowData - when row has non-numeric longitude - filters out row`() {
-        val nonNumericLonRow = Array(WeatherCacheCsvEntry.HEADERS.size) { "valid_data" }
+        val nonNumericLonRow = Array(CsvWeatherModel.HEADERS.size) { "valid_data" }
         nonNumericLonRow[0] = testLocation.latitude.toString()
         nonNumericLonRow[1] = "not_a_longitude"
 

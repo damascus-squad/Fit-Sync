@@ -2,7 +2,7 @@ package org.damascus.data.weather.mapper
 
 import org.damascus.data.weather.dto.CurrentWeather
 import org.damascus.data.weather.dto.CurrentWeatherUnits
-import org.damascus.data.weather.dto.WeatherCacheCsvEntry
+import org.damascus.data.weather.dto.CsvWeatherModel
 import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
@@ -12,13 +12,13 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class WeatherCacheEntryConverter {
+class WeatherDataConverter  {
 
-    fun weatherInfoToEntry(weatherInfo: WeatherInfo, timestamp: String? = null): WeatherCacheCsvEntry {
+    fun weatherInfoToEntry(weatherInfo: WeatherInfo, timestamp: String? = null): CsvWeatherModel {
         val actualTimestamp = timestamp ?: LocalDateTime.now()
             .format(DateTimeFormatter.ISO_DATE_TIME)
 
-        return WeatherCacheCsvEntry(
+        return CsvWeatherModel(
             latitude = weatherInfo.latitude,
             longitude = weatherInfo.longitude,
             elevation = weatherInfo.elevation,
@@ -36,7 +36,7 @@ class WeatherCacheEntryConverter {
         )
     }
 
-    fun entryToWeatherInfo(entry: WeatherCacheCsvEntry): WeatherInfo {
+    fun entryToWeatherInfo(entry: CsvWeatherModel): WeatherInfo {
         return WeatherInfo(
             latitude = entry.latitude,
             longitude = entry.longitude,
@@ -87,17 +87,13 @@ class WeatherCacheEntryConverter {
             ZoneId.of("UTC")
         }
 
-        val utcOffset = zoneId.rules.getOffset(Instant.now())
-        val offsetSeconds = utcOffset.totalSeconds
-        val timezoneAbbrev = zoneId.id
-
         return WeatherDto(
             latitude = weatherInfo.latitude,
             longitude = weatherInfo.longitude,
             generationTimeMs = System.currentTimeMillis().toDouble(),
-            utcOffsetSeconds = offsetSeconds,
+            utcOffsetSeconds = zoneId.rules.getOffset(Instant.now()).totalSeconds,
             timezone = weatherInfo.timezone,
-            timezoneAbbreviation = timezoneAbbrev,
+            timezoneAbbreviation = zoneId.id,
             elevation = weatherInfo.elevation,
             currentWeatherUnits = CurrentWeatherUnits(
                 time = "iso8601",
@@ -120,7 +116,7 @@ class WeatherCacheEntryConverter {
         )
     }
 
-    fun entryToCsvRow(entry: WeatherCacheCsvEntry): Array<String> {
+    fun entryToCsvRow(entry: CsvWeatherModel): Array<String> {
         return arrayOf(
             entry.latitude.toString(),
             entry.longitude.toString(),
@@ -139,12 +135,9 @@ class WeatherCacheEntryConverter {
         )
     }
 
-    fun csvRowToEntry(csvRow: Array<String>): WeatherCacheCsvEntry? {
-        if (csvRow.size < WeatherCacheCsvEntry.HEADERS.size) {
-            return null
-        }
-        try {
-            return WeatherCacheCsvEntry(
+    fun csvRowToEntry(csvRow: Array<String>): CsvWeatherModel? =
+        runCatching {
+            CsvWeatherModel(
                 latitude = csvRow[0].toDouble(),
                 longitude = csvRow[1].toDouble(),
                 elevation = csvRow[2].toDouble(),
@@ -160,8 +153,5 @@ class WeatherCacheEntryConverter {
                 windDirectionUnit = csvRow[12],
                 timestamp = csvRow[13]
             )
-        } catch (e: Exception) {
-            return null
-        }
-    }
+        }.getOrNull()
 }

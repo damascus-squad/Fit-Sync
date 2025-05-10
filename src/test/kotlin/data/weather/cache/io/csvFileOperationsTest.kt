@@ -9,9 +9,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
 
-class OpenCsvFileOperationsTest {
+class csvFileOperationsTest {
 
-    private lateinit var fileOperations: OpenCsvFileOperations
+    private lateinit var fileOperations: csvFileOperations
     private lateinit var testBaseDir: Path
 
     @TempDir
@@ -19,7 +19,7 @@ class OpenCsvFileOperationsTest {
 
     @BeforeEach
     fun setUp() {
-        fileOperations = OpenCsvFileOperations()
+        fileOperations = csvFileOperations()
         testBaseDir = Files.createDirectory(rootTempDir.resolve("csvOpsTestWorkingDir"))
     }
 
