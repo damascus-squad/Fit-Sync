@@ -1,9 +1,9 @@
 package presentation.io
 
-import presentation.TerminalColor
-import presentation.withStyle
+import presentation.utils.TerminalColor
+import presentation.utils.withStyle
 
-class ConsoleReader: InputReader {
+class ConsoleReader : InputReader {
 
     override fun readString(prompt: String): String {
         print("$prompt ".withStyle(TerminalColor.Blue))
@@ -16,6 +16,7 @@ class ConsoleReader: InputReader {
             } else return input
         }
     }
+
     override fun readInt(prompt: String, min: Int?, max: Int?): Int {
         print("$prompt ".withStyle(TerminalColor.Blue))
         while (true) {

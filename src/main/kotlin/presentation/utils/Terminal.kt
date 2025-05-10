@@ -1,4 +1,4 @@
-package presentation
+package presentation.utils
 
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.model.ClothType

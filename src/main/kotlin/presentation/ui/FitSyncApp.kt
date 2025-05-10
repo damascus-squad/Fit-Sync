@@ -1,11 +1,11 @@
 package org.damascus.presentation.ui
 
 import org.damascus.presentation.io.ConsoleDisplay
-import presentation.TerminalColor
 import presentation.io.InputReader
 import presentation.ui.ClothesSuggesterByCityNameCli
 import presentation.ui.UILauncher
-import presentation.withStyle
+import presentation.utils.TerminalColor
+import presentation.utils.withStyle
 
 class FitSyncApp(
     private val printer: ConsoleDisplay,

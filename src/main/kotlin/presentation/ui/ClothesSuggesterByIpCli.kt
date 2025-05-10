@@ -1,13 +1,16 @@
 package org.damascus.presentation.ui
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.usecase.GetWeatherByIpUseCase
 import org.damascus.domain.usecase.SuggestClothesUseCase
 import org.damascus.presentation.io.ConsoleDisplay
-import presentation.TerminalColor
+import org.damascus.presentation.utils.showLoading
 import presentation.ui.UILauncher
-import presentation.withStyle
+import presentation.utils.TerminalColor
+import presentation.utils.withStyle
 
 class ClothesSuggesterByIpCli(
     private val printer: ConsoleDisplay,
@@ -15,14 +18,12 @@ class ClothesSuggesterByIpCli(
     private val suggestClothesUseCase: SuggestClothesUseCase,
 ) : UILauncher {
 
-    private var suggestedClothes: List<Cloth>? = null
     private val loadingScope = CoroutineScope(Dispatchers.Default)
     override suspend fun start() {
-        showLoading()
+        showLoading(loadingScope, printer)
 
         suggestClothesByIP(
             onSuccess = { clothes ->
-                suggestedClothes = clothes
                 printer.display("\r".withStyle(TerminalColor.Reset))
                 showClothingSuggestions(clothes)
                 loadingScope.cancel()
@@ -33,18 +34,6 @@ class ClothesSuggesterByIpCli(
                 loadingScope.cancel()
             }
         )
-    }
-
-    private fun showLoading() {
-        loadingScope.launch {
-            val frames = listOf("👗", "🧥", "🧦", "👕", "🧤", "🧣")
-            while (isActive) {
-                for (frame in frames) {
-                    printer.display("\rThinking about your style $frame ")
-                    delay(250)
-                }
-            }
-        }
     }
 
     private suspend fun suggestClothesByIP(
