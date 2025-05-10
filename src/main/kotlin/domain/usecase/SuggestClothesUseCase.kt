@@ -15,7 +15,7 @@ class SuggestClothesUseCase(
 
         if (temperature.isNaN()) throw IllegalTemperatureException()
 
-        val clothType: ClothType = if (weatherUnit == "C") {
+        val clothType: ClothType = if (weatherUnit == "°C") {
             when {
                 temperature <= VERY_HEAVY_TEMPERATURE_THRESHOLDS_C -> ClothType.VERY_HEAVY
                 temperature <= HEAVY_TEMPERATURE_THRESHOLDS_C -> ClothType.HEAVY
