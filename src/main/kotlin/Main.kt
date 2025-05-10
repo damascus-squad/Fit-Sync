@@ -1,9 +1,9 @@
 package org.damascus
 
 import org.damascus.di.appModule
-import org.damascus.presentation.ui.FitSyncApp
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.java.KoinJavaComponent.getKoin
+import presentation.ui.FitSyncApp
 
 suspend fun main() {
     startKoin {

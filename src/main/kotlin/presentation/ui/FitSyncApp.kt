@@ -1,9 +1,9 @@
-package org.damascus.presentation.ui
+package presentation.ui
 
 import org.damascus.presentation.io.ConsoleDisplay
+import org.damascus.presentation.ui.ClothesSuggesterByIpCli
+import org.damascus.presentation.ui.UiAction
 import presentation.io.InputReader
-import presentation.ui.ClothesSuggesterByCityNameCli
-import presentation.ui.UILauncher
 import presentation.utils.TerminalColor
 import presentation.utils.withStyle
 
@@ -58,6 +58,7 @@ class FitSyncApp(
                 }
 
                 printer.displayLn("\n✨ You selected: ${uiActionList[input - 1].name}".withStyle(TerminalColor.Cyan))
+
                 uiActionList[input - 1].action()
 
             } catch (e: Exception) {
@@ -70,6 +71,6 @@ class FitSyncApp(
     }
 
     private fun exitApp() {
-        println("\n👋 Exiting FitSyncApp... See you next time!".withStyle(TerminalColor.Green))
+        printer.displayLn("\n👋 Exiting FitSyncApp... See you next time!".withStyle(TerminalColor.Green))
     }
 }
