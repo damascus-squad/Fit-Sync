@@ -23,7 +23,7 @@ class CachedWeatherDataSource(
 
     override suspend fun getWeatherByIp(): WeatherDto {
         val location = locationDataSource.getCurrentLocation()
-            ?: throw LocationNotFoundExceptionIp()
+            ?: throw IpNotFoundException()
         return getCachedWeather(LocationCoordinate(location.latitude, location.longitude))
     }
 

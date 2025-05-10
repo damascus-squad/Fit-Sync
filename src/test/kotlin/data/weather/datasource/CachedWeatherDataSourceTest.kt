@@ -3,128 +3,203 @@ package data.weather.datasource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import kotlinx.coroutines.test.runTest
+import org.damascus.data.location.dataSource.LocationDataSource
+import org.damascus.data.location.dto.IpLocationDto
 import org.damascus.data.weather.cache.io.WeatherCacheService
 import org.damascus.data.weather.datasource.CachedWeatherDataSource
-import org.damascus.data.weather.datasource.WeatherCacheService
+import org.damascus.data.weather.datasource.IpNotFoundException
 import org.damascus.data.weather.datasource.WeatherDataSource
-import org.damascus.data.weather.dto.CurrentWeather
-import org.damascus.data.weather.dto.CurrentWeatherUnits
-import org.damascus.data.weather.dto.WeatherDto
+import org.damascus.data.weather.dto.*
 import org.damascus.data.weather.mapper.WeatherDataConverter
-import org.damascus.domain.model.LocationCoordinate
-import org.damascus.domain.model.Weather
-import org.damascus.domain.model.WeatherInfo
-import org.damascus.domain.model.WeatherUnit
+import org.damascus.data.weather.datasource.LocationNotFoundException
+import org.damascus.domain.model.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class CachedWeatherDataSourceTest {
 
- private lateinit var mockApiClient: WeatherDataSource
- private lateinit var mockCacheService: WeatherCacheService
- private lateinit var converter: WeatherDataConverter // Real instance for testing conversion logic
+    private lateinit var mockApiClient: WeatherDataSource
+    private lateinit var mockCacheService: WeatherCacheService
+    private lateinit var mockLocationDataSource: LocationDataSource
+    private lateinit var converter: WeatherDataConverter
+    private lateinit var cachedWeatherDataSource: CachedWeatherDataSource
 
- private lateinit var cachedWeatherDataSource: CachedWeatherDataSource
+    private val testCity = "Cairo"
+    private val testCountry = "EG"
+    private val testCityLocation = LocationDto(10.0, 20.0)
+    private val testIpLocation = IpLocationDto(10.0, 20.0) // Changed to IpLocationDto
+    private val cacheDuration = 30L
 
- private val testLocation = LocationCoordinate(10.0, 20.0)
- private val cacheDuration = 30L
-
- private val weatherInfoFromCache = WeatherInfo(
-  latitude = 10.0, longitude = 20.0, elevation = 5.0, timezone = "Cache/Zone",
-  weather = Weather(
-   temperature = 20.0,
-   windSpeed = 10.0,
-   windDirection = 90,
-   isDay = true,
-   weatherCode = 1,
-   time = "cache_time"
-  ),
-  units = WeatherUnit(temperatureUnit = "C_cache", windSpeedUnit = "kmh_cache", windDirectionUnit = "deg_cache")
- )
- private val weatherDtoFromApi = WeatherDto(
-  latitude = 10.0, longitude = 20.0, generationTimeMs = 1.0, utcOffsetSeconds = 3600, timezone = "Api/Zone",
-  timezoneAbbreviation = "Api/Zone", elevation = 10.0,
-  currentWeatherUnits = CurrentWeatherUnits("iso8601", "seconds", "C_api", "ms_api", "deg_api", "1/0", "wmo code"),
-  currentWeather = CurrentWeather("api_time", 0, 25.0, 15.0, 180, 0, 2)
- )
-
- @BeforeEach
- fun setup() {
-  mockApiClient = mockk()
-  mockCacheService = mockk()
-  converter = WeatherDataConverter()
-
-  cachedWeatherDataSource = CachedWeatherDataSource(
-   apiClient = mockApiClient,
-   cacheService = mockCacheService,
-   converter = converter,
-   cacheDurationMinutes = cacheDuration
-  )
- }
-
- @Test
- fun `getWeather when cache is valid should return data from cache and not call api`() {
-  runTest {
-   coEvery { mockCacheService.getValidFromCache(testLocation, cacheDuration) } returns weatherInfoFromCache
-
-   val result: WeatherDto = cachedWeatherDataSource.getWeather(testLocation)
-
-   val expectedDto = WeatherDto(
-    latitude = weatherInfoFromCache.latitude,
-    longitude = weatherInfoFromCache.longitude,
-    elevation = weatherInfoFromCache.elevation,
-    timezone = weatherInfoFromCache.timezone,
-    generationTimeMs = result.generationTimeMs,
-    utcOffsetSeconds = result.utcOffsetSeconds,
-    timezoneAbbreviation = result.timezoneAbbreviation,
-    currentWeatherUnits = CurrentWeatherUnits(
-     time = "iso8601",
-     interval = "seconds",
-     temperature = weatherInfoFromCache.units.temperatureUnit,
-     windSpeed = weatherInfoFromCache.units.windSpeedUnit,
-     windDirection = weatherInfoFromCache.units.windDirectionUnit,
-     isDay = "1/0",
-     weatherCode = "wmo code"
-    ),
-    currentWeather = CurrentWeather(
-     time = weatherInfoFromCache.weather.time,
-     interval = 0,
-     temperature = weatherInfoFromCache.weather.temperature,
-     windSpeed = weatherInfoFromCache.weather.windSpeed,
-     windDirection = weatherInfoFromCache.weather.windDirection,
-     isDay = if (weatherInfoFromCache.weather.isDay) 1 else 0,
-     weatherCode = weatherInfoFromCache.weather.weatherCode
+    private val weatherInfoFromCache = WeatherInfo(
+        latitude = 10.0,
+        longitude = 20.0,
+        elevation = 5.0,
+        timezone = "Cache/Zone",
+        weather = Weather(
+            temperature = 20.0,
+            windSpeed = 10.0,
+            windDirection = 90,
+            isDay = true,
+            weatherCode = 1,
+            time = "cache_time"
+        ),
+        units = WeatherUnit(
+            temperatureUnit = "C_cache",
+            windSpeedUnit = "kmh_cache",
+            windDirectionUnit = "deg_cache"
+        )
     )
-   )
 
-   assertThat(result).isEqualTo(expectedDto)
+    private val weatherDtoFromApi = WeatherDto(
+        latitude = 10.0,
+        longitude = 20.0,
+        generationTimeMs = 1.0,
+        utcOffsetSeconds = 3600,
+        timezone = "Api/Zone",
+        timezoneAbbreviation = "Api/Zone",
+        elevation = 10.0,
+        currentWeatherUnitsDto = CurrentWeatherUnitsDto(
+            time = "iso8601",
+            interval = "seconds",
+            temperature = "C_api",
+            windSpeed = "ms_api",
+            windDirection = "deg_api",
+            isDay = "1/0",
+            weatherCode = "wmo code"
+        ),
+        currentWeatherDto = CurrentWeatherDto(
+            time = "api_time",
+            interval = 0,
+            temperature = 25.0,
+            windSpeed = 15.0,
+            windDirection = 180,
+            isDay = 0,
+            weatherCode = 2
+        )
+    )
 
-   coVerify(exactly = 1) { mockCacheService.getValidFromCache(testLocation, cacheDuration) }
-   coVerify(exactly = 0) { mockApiClient.getWeather(any()) }
-   coVerify(exactly = 0) { mockCacheService.saveToCache(any()) }
-  }
- }
+    @BeforeEach
+    fun setup() {
+        mockApiClient = mockk()
+        mockCacheService = mockk()
+        mockLocationDataSource = mockk()
+        converter = WeatherDataConverter()
 
+        cachedWeatherDataSource = CachedWeatherDataSource(
+            apiClient = mockApiClient,
+            cacheService = mockCacheService,
+            converter = converter,
+            locationDataSource = mockLocationDataSource,
+            cacheDurationMinutes = cacheDuration
+        )
+    }
 
-// should delete this , no api testing ❌
- @Test
- fun `getWeather when cache is invalid should fetch from api save to cache and return api data`() {
-  runTest {
-   val expectedInfoToCache = converter.dtoToWeatherInfo(weatherDtoFromApi)
-   val weatherInfoSlot = slot<WeatherInfo>()
+    @Test
+    fun `getWeatherByCity when cache is valid should return data from cache`() = runTest {
+        // Given
+        val coordinate = LocationCoordinate(testCityLocation.latitude, testCityLocation.longitude)
+        coEvery { mockLocationDataSource.getCityCoordinates(testCity, testCountry) } returns testCityLocation
+        coEvery { mockCacheService.getValidFromCache(coordinate, cacheDuration) } returns weatherInfoFromCache
 
-   coEvery { mockCacheService.getValidFromCache(testLocation, cacheDuration) } returns null
-   coEvery { mockApiClient.getWeather(testLocation) } returns weatherDtoFromApi
-   coEvery { mockCacheService.saveToCache(capture(weatherInfoSlot)) } just runs
+        // When
+        val result = cachedWeatherDataSource.getWeatherByCity(testCity, testCountry)
 
-   val result = cachedWeatherDataSource.getWeather(testLocation)
+        // Then
+        val expectedDto = converter.weatherInfoToDto(weatherInfoFromCache)
+        assertThat(result).isEqualTo(expectedDto)
 
-   assertThat(result).isEqualTo(weatherDtoFromApi)
-   assertThat(weatherInfoSlot.captured).isEqualTo(expectedInfoToCache)
+        coVerify(exactly = 1) { mockLocationDataSource.getCityCoordinates(testCity, testCountry) }
+        coVerify(exactly = 1) { mockCacheService.getValidFromCache(coordinate, cacheDuration) }
+        coVerify(exactly = 0) { mockApiClient.getWeatherByCity(any(), any()) }
+        coVerify(exactly = 0) { mockCacheService.saveToCache(any()) }
+    }
 
-   coVerify(exactly = 1) { mockCacheService.getValidFromCache(testLocation, cacheDuration) }
-   coVerify(exactly = 1) { mockApiClient.getWeather(testLocation) }
-   coVerify(exactly = 1) { mockCacheService.saveToCache(expectedInfoToCache) }
-  }
- }
+    @Test
+    fun `getWeatherByCity when cache is invalid should fetch from api and cache`() = runTest {
+        // Given
+        val coordinate = LocationCoordinate(testCityLocation.latitude, testCityLocation.longitude)
+        val expectedInfoToCache = converter.dtoToWeatherInfo(weatherDtoFromApi)
+
+        coEvery { mockLocationDataSource.getCityCoordinates(testCity, testCountry) } returns testCityLocation
+        coEvery { mockCacheService.getValidFromCache(coordinate, cacheDuration) } returns null
+        coEvery {
+            mockApiClient.getWeatherByCity(
+                testCityLocation.latitude.toString(),
+                testCityLocation.longitude.toString()
+            )
+        } returns weatherDtoFromApi
+        coEvery { mockCacheService.saveToCache(any()) } just runs
+
+        // When
+        val result = cachedWeatherDataSource.getWeatherByCity(testCity, testCountry)
+
+        // Then
+        assertThat(result).isEqualTo(weatherDtoFromApi)
+
+        coVerify(exactly = 1) { mockLocationDataSource.getCityCoordinates(testCity, testCountry) }
+        coVerify(exactly = 1) { mockCacheService.getValidFromCache(coordinate, cacheDuration) }
+        coVerify(exactly = 1) {
+            mockApiClient.getWeatherByCity(
+                testCityLocation.latitude.toString(),
+                testCityLocation.longitude.toString()
+            )
+        }
+        coVerify(exactly = 1) {
+            mockCacheService.saveToCache(match {
+                it.latitude == expectedInfoToCache.latitude &&
+                        it.longitude == expectedInfoToCache.longitude
+            })
+        }
+    }
+
+    @Test
+    fun `getWeatherByIp when cache is valid should return data from cache`() = runTest {
+        // Given
+        val coordinate = LocationCoordinate(testIpLocation.latitude, testIpLocation.longitude)
+        coEvery { mockLocationDataSource.getCurrentLocation() } returns testIpLocation
+        coEvery { mockCacheService.getValidFromCache(coordinate, cacheDuration) } returns weatherInfoFromCache
+
+        // When
+        val result = cachedWeatherDataSource.getWeatherByIp()
+
+        // Then
+        val expectedDto = converter.weatherInfoToDto(weatherInfoFromCache)
+        assertThat(result).isEqualTo(expectedDto)
+
+        coVerify(exactly = 1) { mockLocationDataSource.getCurrentLocation() }
+        coVerify(exactly = 1) { mockCacheService.getValidFromCache(coordinate, cacheDuration) }
+        coVerify(exactly = 0) { mockApiClient.getWeatherByCity(any(), any()) }
+        coVerify(exactly = 0) { mockCacheService.saveToCache(any()) }
+    }
+
+    @Test
+    fun `getWeatherByCity when location not found should throw LocationNotFoundException`() = runTest {
+        // Given
+        coEvery { mockLocationDataSource.getCityCoordinates(testCity, testCountry) } returns null
+
+        // When & Then
+        assertThrows<LocationNotFoundException> {
+            cachedWeatherDataSource.getWeatherByCity(testCity, testCountry)
+        }
+
+        coVerify(exactly = 1) { mockLocationDataSource.getCityCoordinates(testCity, testCountry) }
+        coVerify(exactly = 0) { mockCacheService.getValidFromCache(any(), any()) }
+        coVerify(exactly = 0) { mockApiClient.getWeatherByCity(any(), any()) }
+    }
+
+    @Test
+    fun `getWeatherByIp when location not found should throw IpNotFoundException`() = runTest {
+        // Given
+        coEvery { mockLocationDataSource.getCurrentLocation() } returns null
+
+        // When / Then
+        assertThrows<IpNotFoundException> {
+            cachedWeatherDataSource.getWeatherByIp()
+        }
+
+        coVerify(exactly = 1) { mockLocationDataSource.getCurrentLocation() }
+        coVerify(exactly = 0) { mockCacheService.getValidFromCache(any(), any()) }
+        coVerify(exactly = 0) { mockApiClient.getWeatherByCity(any(), any()) }
+    }
 }
