@@ -23,7 +23,7 @@ dependencies {
     testImplementation(kotlin("test"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.12.2")
-
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("com.google.truth:truth:1.4.4")
     testImplementation("io.mockk:mockk:1.14.0")
     testImplementation("io.ktor:ktor-client-mock:2.3.7")
