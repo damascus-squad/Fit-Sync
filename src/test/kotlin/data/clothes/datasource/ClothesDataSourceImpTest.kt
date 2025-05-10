@@ -1,38 +1,59 @@
 package data.clothes.datasource
 
 import org.damascus.data.clothes.datasource.ClothesDataSourceImp
+import org.damascus.data.clothes.repository.ClothesRepositoryImpl
 import org.damascus.domain.model.ClothType
-import org.junit.jupiter.api.BeforeEach
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class ClothesDataSourceImpTest {
 
-    private lateinit var clothesDataSource: ClothesDataSourceImp
+    private val dataSource = ClothesDataSourceImp()
+    private val clothesRepository =ClothesRepositoryImpl(dataSource)
+    @ParameterizedTest(name = "should return {1} items for type {0}")
+    @CsvSource(
+        "VERY_HEAVY, 6",
+        "HEAVY, 5",
+        "MEDIUM, 6",
+        "LIGHT, 5",
+        "VERY_LIGHT, 6"
+    )
+    fun `should return correct number of clothes for each type`(type: ClothType, expectedCount: Int) {
+        // Given is already covered by CsvSource input
 
-    @BeforeEach
-    fun setUp() {
-        clothesDataSource = ClothesDataSourceImp()
-    }
-    @Test
-    fun `getClothesByType returns only VERY_HEAVY clothes`() {
-        val result = clothesDataSource.getClothesByType(ClothType.VERY_HEAVY)
-        assertEquals(6, result.size)
-        assertTrue(result.all { it.type == ClothType.VERY_HEAVY })
+        // When
+        
+        val result = clothesRepository.getClothesByType(type)
+
+        // Then
+        assertEquals(expectedCount, result.size)
     }
 
-    @Test
-    fun `getClothesByType returns correct items for MEDIUM`() {
-        val result = clothesDataSource.getClothesByType(ClothType.MEDIUM)
-        assertEquals(6, result.size)
-        assertTrue(result.all { it.type == ClothType.MEDIUM })
+    @ParameterizedTest(name = "should return only items of type {0}")
+    @CsvSource(
+        "VERY_HEAVY",
+        "HEAVY",
+        "MEDIUM",
+        "LIGHT",
+        "VERY_LIGHT"
+    )
+    fun `should return only items of the specified type`(type: ClothType) {
+        // When
+        val result = clothesRepository.getClothesByType(type)
+
+        // Then
+        assertTrue(result.all { it.type == type })
     }
 
-    @Test
-    fun `getClothesByType returns correct items for VERY_LIGHT`() {
-        val result = clothesDataSource.getClothesByType(ClothType.VERY_LIGHT)
-        assertEquals(6, result.size)
-        assertTrue(result.all { it.type == ClothType.VERY_LIGHT })
+    @ParameterizedTest
+    @CsvSource("28") // Total items: 6 + 5 + 6 + 5 + 6 = 28
+    fun `should return all clothes correctly`(expectedTotal: Int) {
+        // When
+        val allClothes = clothesRepository.getAllClothes()
+
+        // Then
+        assertEquals(expectedTotal, allClothes.size)
     }
 }
