@@ -8,7 +8,12 @@ import org.damascus.domain.repository.ClothesRepository
 class ClothesRepositoryImpl(
     private val dataSource: ClothesDataSource,
 ) : ClothesRepository {
-    override fun getClothByType(clothType: ClothType): List<Cloth> {
-        return dataSource.getClothesByType(clothType)
+
+    override fun getClothesByType(clothType: ClothType): List<Cloth> {
+        return dataSource.getAllClothes().filter { it.type == clothType }
+    }
+
+    override fun getAllClothes(): List<Cloth> {
+        return dataSource.getAllClothes()
     }
 }
