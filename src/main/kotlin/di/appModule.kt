@@ -41,7 +41,7 @@ val appModule = module {
         Json { ignoreUnknownKeys = true }
     }
     single<ClothesDataSource> { ClothesDataSourceImp() }
-    single<LocationDataSource> { LocationApiClient(get(), get()) }
+    single<LocationDataSource> { LocationApiClient(get()) }
     single<WeatherDataSource> { WeatherApiClient(get(), get()) }
     single<WeatherRepository> { WeatherRepositoryImp(get()) }
     single<ClothesRepository> { ClothesRepositoryImpl(get()) }

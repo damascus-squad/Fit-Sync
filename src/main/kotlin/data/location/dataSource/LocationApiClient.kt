@@ -3,15 +3,12 @@ package org.damascus.data.location.dataSource
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import kotlinx.serialization.json.Json
 import org.damascus.data.location.dto.IpLocationDto
 import org.damascus.data.weather.dto.LocationDto
 import org.damascus.data.weather.dto.LocationResultDto
 
 class LocationApiClient(
-    private val client: HttpClient,
-    private val jsonParser: Json
+    private val client: HttpClient
 ) : LocationDataSource {
 
     override suspend fun getCityCoordinates(city: String, country: String): LocationDto? {
@@ -19,10 +16,9 @@ class LocationApiClient(
             url(GEO_BASE_URL)
             parameter("name", "$city,$country")
         }
-
-        val resultDto = jsonParser.decodeFromString(LocationResultDto.serializer(), response.bodyAsText())
-        return resultDto.results?.firstOrNull()
+        return response.body<LocationResultDto>().results?.firstOrNull()
     }
+
 
 
     override suspend fun getCurrentLocation(): IpLocationDto? {
