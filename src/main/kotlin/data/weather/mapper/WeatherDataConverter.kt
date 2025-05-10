@@ -1,9 +1,6 @@
 package org.damascus.data.weather.mapper
 
-import org.damascus.data.weather.dto.CurrentWeather
-import org.damascus.data.weather.dto.CurrentWeatherUnits
-import org.damascus.data.weather.dto.CsvWeatherModel
-import org.damascus.data.weather.dto.WeatherDto
+import org.damascus.data.weather.dto.*
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
@@ -65,17 +62,17 @@ class WeatherDataConverter  {
             elevation = dto.elevation,
             timezone = dto.timezone.ifBlank { "GMT" },
             weather = Weather(
-                temperature = dto.currentWeather.temperature,
-                windSpeed = dto.currentWeather.windSpeed,
-                windDirection = dto.currentWeather.windDirection,
-                isDay = dto.currentWeather.isDay == 1,
-                weatherCode = dto.currentWeather.weatherCode,
-                time = dto.currentWeather.time.ifBlank { "" }
+                temperature = dto.currentWeatherDto.temperature,
+                windSpeed = dto.currentWeatherDto.windSpeed,
+                windDirection = dto.currentWeatherDto.windDirection,
+                isDay = dto.currentWeatherDto.isDay == 1,
+                weatherCode = dto.currentWeatherDto.weatherCode,
+                time = dto.currentWeatherDto.time.ifBlank { "" }
             ),
             units = WeatherUnit(
-                temperatureUnit = dto.currentWeatherUnits.temperature.ifBlank { "°C" },
-                windSpeedUnit = dto.currentWeatherUnits.windSpeed.ifBlank { "km/h" },
-                windDirectionUnit = dto.currentWeatherUnits.windDirection.ifBlank { "°" }
+                temperatureUnit = dto.currentWeatherUnitsDto.temperature.ifBlank { "°C" },
+                windSpeedUnit = dto.currentWeatherUnitsDto.windSpeed.ifBlank { "km/h" },
+                windDirectionUnit = dto.currentWeatherUnitsDto.windDirection.ifBlank { "°" }
             )
         )
     }
@@ -95,7 +92,7 @@ class WeatherDataConverter  {
             timezone = weatherInfo.timezone,
             timezoneAbbreviation = zoneId.id,
             elevation = weatherInfo.elevation,
-            currentWeatherUnits = CurrentWeatherUnits(
+            currentWeatherUnitsDto = CurrentWeatherUnitsDto(
                 time = "iso8601",
                 interval = "seconds",
                 temperature = weatherInfo.units.temperatureUnit,
@@ -104,7 +101,7 @@ class WeatherDataConverter  {
                 isDay = "1/0",
                 weatherCode = "wmo code"
             ),
-            currentWeather = CurrentWeather(
+            currentWeatherDto = CurrentWeatherDto(
                 time = weatherInfo.weather.time,
                 interval = 0,
                 temperature = weatherInfo.weather.temperature,

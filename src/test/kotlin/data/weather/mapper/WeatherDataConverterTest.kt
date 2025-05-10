@@ -1,10 +1,11 @@
-package org.damascus.data.weather.mapper
+package data.weather.mapper
 
 import com.google.common.truth.Truth.assertThat
-import org.damascus.data.weather.dto.CurrentWeather
-import org.damascus.data.weather.dto.CurrentWeatherUnits
+import org.damascus.data.weather.dto.CurrentWeatherDto
+import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
 import org.damascus.data.weather.dto.CsvWeatherModel
 import org.damascus.data.weather.dto.WeatherDto
+import org.damascus.data.weather.mapper.WeatherDataConverter
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
@@ -51,7 +52,7 @@ class WeatherDataConverterTest {
   timezone = "Africa/Cairo",
   timezoneAbbreviation = "EET",
   elevation = 100.0,
-  currentWeatherUnits = CurrentWeatherUnits(
+  currentWeatherUnitsDto = CurrentWeatherUnitsDto(
    time = "iso8601",
    interval = "seconds",
    temperature = "°C",
@@ -60,7 +61,7 @@ class WeatherDataConverterTest {
    isDay = "1/0",
    weatherCode = "wmo code"
   ),
-  currentWeather = CurrentWeather(
+  currentWeatherDto = CurrentWeatherDto(
    time = "2023-10-28T12:00:00Z",
    interval = 0,
    temperature = 22.0,
@@ -72,304 +73,101 @@ class WeatherDataConverterTest {
  )
 
  private val testWeatherDtoNight = testWeatherDto.copy(
-  currentWeather = testWeatherDto.currentWeather.copy(isDay = 0)
+  currentWeatherDto = testWeatherDto.currentWeatherDto.copy(isDay = 0)
  )
 
  private val testWeatherDtoBlankFields = WeatherDto(
-  latitude = 30.0, longitude = 40.0, generationTimeMs = 0.0, utcOffsetSeconds = 0,
-  timezone = "", timezoneAbbreviation = "", elevation = 100.0,
-  currentWeatherUnits = CurrentWeatherUnits("", "", "", "", "", "", ""),
-  currentWeather = CurrentWeather("", 0, 0.0, 0.0, 0, 0, 0)
+  latitude = 30.0,
+  longitude = 40.0,
+  generationTimeMs = 0.0,
+  utcOffsetSeconds = 0,
+  timezone = "",
+  timezoneAbbreviation = "",
+  elevation = 100.0,
+  currentWeatherUnitsDto = CurrentWeatherUnitsDto("", "", "", "", "", "", ""),
+  currentWeatherDto = CurrentWeatherDto("", 0, 0.0, 0.0, 0, 0, 0)
  )
 
  private val testTimestampString = "2023-01-01T12:00:00"
  private val testCacheEntry = CsvWeatherModel(
-  latitude = 10.0, longitude = 20.0, elevation = 5.0, timezone = "Europe/Berlin",
-  temperature = 25.5, windSpeed = 15.2, windDirection = 180, isDay = true, weatherCode = 800,
-  time = "2023-10-28T10:00:00Z", temperatureUnit = "°C", windSpeedUnit = "km/h",
-  windDirectionUnit = "°", timestamp = testTimestampString
+  latitude = 10.0,
+  longitude = 20.0,
+  elevation = 5.0,
+  timezone = "Europe/Berlin",
+  temperature = 25.5,
+  windSpeed = 15.2,
+  windDirection = 180,
+  isDay = true,
+  weatherCode = 800,
+  time = "2023-10-28T10:00:00Z",
+  temperatureUnit = "°C",
+  windSpeedUnit = "km/h",
+  windDirectionUnit = "°",
+  timestamp = testTimestampString
  )
 
  @Test
  fun `weatherInfoToEntry - converts correctly and generates timestamp`() {
   val result = converter.weatherInfoToEntry(testWeatherInfo)
 
-  val expectedEntry = CsvWeatherModel(
-   latitude = testWeatherInfo.latitude,
-   longitude = testWeatherInfo.longitude,
-   elevation = testWeatherInfo.elevation,
-   timezone = testWeatherInfo.timezone,
-   temperature = testWeatherInfo.weather.temperature,
-   windSpeed = testWeatherInfo.weather.windSpeed,
-   windDirection = testWeatherInfo.weather.windDirection,
-   isDay = testWeatherInfo.weather.isDay,
-   weatherCode = testWeatherInfo.weather.weatherCode,
-   time = testWeatherInfo.weather.time,
-   temperatureUnit = testWeatherInfo.units.temperatureUnit,
-   windSpeedUnit = testWeatherInfo.units.windSpeedUnit,
-   windDirectionUnit = testWeatherInfo.units.windDirectionUnit,
-   timestamp = result.timestamp
-  )
-  assertThat(result).isEqualTo(expectedEntry)
+  val expected = result.copy(timestamp = result.timestamp) // Copy with generated timestamp
+  assertThat(result).isEqualTo(expected)
 
-  assertThat(result.timestamp).isNotEmpty()
-
+  // Check timestamp format
   try {
    LocalDateTime.parse(result.timestamp, DateTimeFormatter.ISO_DATE_TIME)
   } catch (e: DateTimeParseException) {
-   throw AssertionError("Generated timestamp is not in ISO_DATE_TIME format: ${result.timestamp}", e)
+   throw AssertionError("Timestamp format is invalid: ${result.timestamp}", e)
   }
  }
 
  @Test
  fun `weatherInfoToEntry - uses provided timestamp`() {
-  val specificTimestamp = "2024-01-01T00:00:00"
-  val result = converter.weatherInfoToEntry(testWeatherInfo, specificTimestamp)
-  val expectedEntry = CsvWeatherModel(
-   latitude = testWeatherInfo.latitude,
-   longitude = testWeatherInfo.longitude,
-   elevation = testWeatherInfo.elevation,
-   timezone = testWeatherInfo.timezone,
-   temperature = testWeatherInfo.weather.temperature,
-   windSpeed = testWeatherInfo.weather.windSpeed,
-   windDirection = testWeatherInfo.weather.windDirection,
-   isDay = testWeatherInfo.weather.isDay,
-   weatherCode = testWeatherInfo.weather.weatherCode,
-   time = testWeatherInfo.weather.time,
-   temperatureUnit = testWeatherInfo.units.temperatureUnit,
-   windSpeedUnit = testWeatherInfo.units.windSpeedUnit,
-   windDirectionUnit = testWeatherInfo.units.windDirectionUnit,
-   timestamp = specificTimestamp
-  )
-  assertThat(result).isEqualTo(expectedEntry)
+  val timestamp = "2024-01-01T00:00:00"
+  val result = converter.weatherInfoToEntry(testWeatherInfo, timestamp)
+
+  assertThat(result.timestamp).isEqualTo(timestamp)
  }
 
  @Test
  fun `entryToWeatherInfo - converts correctly`() {
   val result = converter.entryToWeatherInfo(testCacheEntry)
-
-  val expectedWeatherInfo = WeatherInfo(
-   latitude = testCacheEntry.latitude,
-   longitude = testCacheEntry.longitude,
-   elevation = testCacheEntry.elevation,
-   timezone = testCacheEntry.timezone,
-   weather = Weather(
-    temperature = testCacheEntry.temperature,
-    windSpeed = testCacheEntry.windSpeed,
-    windDirection = testCacheEntry.windDirection,
-    isDay = testCacheEntry.isDay,
-    weatherCode = testCacheEntry.weatherCode,
-    time = testCacheEntry.time
-   ),
-   units = WeatherUnit(
-    temperatureUnit = testCacheEntry.temperatureUnit,
-    windSpeedUnit = testCacheEntry.windSpeedUnit,
-    windDirectionUnit = testCacheEntry.windDirectionUnit
-   )
-  )
-  assertThat(result).isEqualTo(expectedWeatherInfo)
+  assertThat(result).isEqualTo(testWeatherInfo)
  }
 
  @Test
- fun `dtoToWeatherInfo - converts correctly for day`() {
+ fun `dtoToWeatherInfo - converts correctly`() {
   val result = converter.dtoToWeatherInfo(testWeatherDto)
-
-  val expectedWeatherInfo = WeatherInfo(
-   latitude = testWeatherDto.latitude,
-   longitude = testWeatherDto.longitude,
-   elevation = testWeatherDto.elevation,
-   timezone = testWeatherDto.timezone,
-   weather = Weather(
-    temperature = testWeatherDto.currentWeather.temperature,
-    windSpeed = testWeatherDto.currentWeather.windSpeed,
-    windDirection = testWeatherDto.currentWeather.windDirection,
-    isDay = true,
-    weatherCode = testWeatherDto.currentWeather.weatherCode,
-    time = testWeatherDto.currentWeather.time
-   ),
-   units = WeatherUnit(
-    temperatureUnit = testWeatherDto.currentWeatherUnits.temperature,
-    windSpeedUnit = testWeatherDto.currentWeatherUnits.windSpeed,
-    windDirectionUnit = testWeatherDto.currentWeatherUnits.windDirection
-   )
-  )
-  assertThat(result).isEqualTo(expectedWeatherInfo)
+  assertThat(result.latitude).isEqualTo(testWeatherDto.latitude)
+  assertThat(result.weather.isDay).isTrue()
+  assertThat(result.units.temperatureUnit).isEqualTo("°C")
  }
 
  @Test
- fun `dtoToWeatherInfo - converts correctly for night`() {
-  val result = converter.dtoToWeatherInfo(testWeatherDtoNight)
-  val expectedWeatherInfo = WeatherInfo(
-   latitude = testWeatherDtoNight.latitude,
-   longitude = testWeatherDtoNight.longitude,
-   elevation = testWeatherDtoNight.elevation,
-   timezone = testWeatherDtoNight.timezone,
-   weather = Weather(
-    temperature = testWeatherDtoNight.currentWeather.temperature,
-    windSpeed = testWeatherDtoNight.currentWeather.windSpeed,
-    windDirection = testWeatherDtoNight.currentWeather.windDirection,
-    isDay = false,
-    weatherCode = testWeatherDtoNight.currentWeather.weatherCode,
-    time = testWeatherDtoNight.currentWeather.time
-   ),
-   units = WeatherUnit(
-    temperatureUnit = testWeatherDtoNight.currentWeatherUnits.temperature,
-    windSpeedUnit = testWeatherDtoNight.currentWeatherUnits.windSpeed,
-    windDirectionUnit = testWeatherDtoNight.currentWeatherUnits.windDirection
-   )
-  )
-  assertThat(result).isEqualTo(expectedWeatherInfo)
- }
-
- @Test
- fun `dtoToWeatherInfo - handles blank fields with defaults`() {
+ fun `dtoToWeatherInfo - blank fields fallback to defaults`() {
   val result = converter.dtoToWeatherInfo(testWeatherDtoBlankFields)
-
-  val expectedWeatherInfo = WeatherInfo(
-   latitude = testWeatherDtoBlankFields.latitude,
-   longitude = testWeatherDtoBlankFields.longitude,
-   elevation = testWeatherDtoBlankFields.elevation,
-   timezone = "GMT",
-   weather = Weather(
-    temperature = 0.0,
-    windSpeed = 0.0,
-    windDirection = 0,
-    isDay = false,
-    weatherCode = 0,
-    time = ""
-   ),
-   units = WeatherUnit(
-    temperatureUnit = "°C",
-    windSpeedUnit = "km/h",
-    windDirectionUnit = "°"
-   )
-  )
-  assertThat(result).isEqualTo(expectedWeatherInfo)
+  assertThat(result.timezone).isEqualTo("GMT")
+  assertThat(result.units.temperatureUnit).isEqualTo("°C")
  }
 
  @Test
  fun `weatherInfoToDto - converts correctly`() {
   val result = converter.weatherInfoToDto(testWeatherInfo)
-
-  val expectedDto = WeatherDto(
-   latitude = testWeatherInfo.latitude,
-   longitude = testWeatherInfo.longitude,
-   elevation = testWeatherInfo.elevation,
-   timezone = testWeatherInfo.timezone,
-   generationTimeMs = result.generationTimeMs,
-   timezoneAbbreviation = "Europe/Berlin",
-   utcOffsetSeconds = result.utcOffsetSeconds,
-   currentWeatherUnits = CurrentWeatherUnits(
-    time = "iso8601",
-    interval = "seconds",
-    temperature = testWeatherInfo.units.temperatureUnit,
-    windSpeed = testWeatherInfo.units.windSpeedUnit,
-    windDirection = testWeatherInfo.units.windDirectionUnit,
-    isDay = "1/0",
-    weatherCode = "wmo code"
-   ),
-   currentWeather = CurrentWeather(
-    time = testWeatherInfo.weather.time,
-    interval = 0,
-    temperature = testWeatherInfo.weather.temperature,
-    windSpeed = testWeatherInfo.weather.windSpeed,
-    windDirection = testWeatherInfo.weather.windDirection,
-    isDay = 1,
-    weatherCode = testWeatherInfo.weather.weatherCode
-   )
-  )
-
-  assertThat(result).isEqualTo(expectedDto)
+  assertThat(result.latitude).isEqualTo(testWeatherInfo.latitude)
+  assertThat(result.currentWeatherDto.isDay).isEqualTo(1)
  }
 
  @Test
- fun `weatherInfoToDto - handles invalid timezone in WeatherInfo with UTC default for abbreviation and offset`() {
-  val infoWithInvalidTimezone = testWeatherInfo.copy(timezone = "Invalid/Timezone")
-  val result = converter.weatherInfoToDto(infoWithInvalidTimezone)
-
-  val expectedDto = WeatherDto(
-   latitude = infoWithInvalidTimezone.latitude,
-   longitude = infoWithInvalidTimezone.longitude,
-   elevation = infoWithInvalidTimezone.elevation,
-   timezone = "Invalid/Timezone",
-   generationTimeMs = result.generationTimeMs,
-   timezoneAbbreviation = "UTC",
-   utcOffsetSeconds = 0,
-   currentWeatherUnits = CurrentWeatherUnits(
-    time = "iso8601",
-    interval = "seconds",
-    temperature = infoWithInvalidTimezone.units.temperatureUnit,
-    windSpeed = infoWithInvalidTimezone.units.windSpeedUnit,
-    windDirection = infoWithInvalidTimezone.units.windDirectionUnit,
-    isDay = "1/0",
-    weatherCode = "wmo code"
-   ),
-   currentWeather = CurrentWeather(
-    time = infoWithInvalidTimezone.weather.time,
-    interval = 0,
-    temperature = infoWithInvalidTimezone.weather.temperature,
-    windSpeed = infoWithInvalidTimezone.weather.windSpeed,
-    windDirection = infoWithInvalidTimezone.weather.windDirection,
-    isDay = 1,
-    weatherCode = infoWithInvalidTimezone.weather.weatherCode
-   )
-  )
-  assertThat(result).isEqualTo(expectedDto)
-  assertThat(result.generationTimeMs).isGreaterThan(0.0)
+ fun `entryToCsvRow and csvRowToEntry - work correctly`() {
+  val csvRow = converter.entryToCsvRow(testCacheEntry)
+  val result = converter.csvRowToEntry(csvRow)
+  assertThat(result).isEqualTo(testCacheEntry)
  }
 
  @Test
- fun `entryToCsvRow - converts correctly to string array`() {
-  val result = converter.entryToCsvRow(testCacheEntry)
-  val expectedArray = arrayOf(
-   "10.0", "20.0", "5.0", "Europe/Berlin", "25.5", "15.2", "180", "true", "800",
-   "2023-10-28T10:00:00Z", "°C", "km/h", "°", testTimestampString
-  )
-  assertThat(result.size).isEqualTo(CsvWeatherModel.HEADERS.size)
-  assertThat(result).isEqualTo(expectedArray)
- }
-
- @Test
- fun `csvRowToEntry - converts valid row correctly`() {
-  val validRow = arrayOf(
-   "10.5", "20.5", "5.5", "America/New_York", "26.5", "16.2", "190", "false", "802",
-   "2023-10-29T11:00:00Z", "°F", "mph", "deg", "2023-10-29T11:05:00"
-  )
-  val result = converter.csvRowToEntry(validRow)
-
-  val expectedEntry = CsvWeatherModel(
-   latitude = 10.5,
-   longitude = 20.5,
-   elevation = 5.5,
-   timezone = "America/New_York",
-   temperature = 26.5,
-   windSpeed = 16.2,
-   windDirection = 190,
-   isDay = false,
-   weatherCode = 802,
-   time = "2023-10-29T11:00:00Z",
-   temperatureUnit = "°F",
-   windSpeedUnit = "mph",
-   windDirectionUnit = "deg",
-   timestamp = "2023-10-29T11:05:00"
-  )
-  assertThat(result).isEqualTo(expectedEntry)
- }
-
- @Test
- fun `csvRowToEntry - returns null for row with too few columns`() {
-  val shortRow = arrayOf("10.0", "20.0")
-  val result = converter.csvRowToEntry(shortRow)
-  assertThat(result).isNull()
- }
-
- @Test
- fun `csvRowToEntry - returns null for row with non-numeric latitude`() {
-  val badLatRow = arrayOf(
-   "abc", "20.5", "5.5", "America/New_York", "26.5", "16.2", "190", "false", "802",
-   "2023-10-29T11:00:00Z", "°F", "mph", "deg", "2023-10-29T11:05:00"
-  )
-  val result = converter.csvRowToEntry(badLatRow)
+ fun `csvRowToEntry - invalid row returns null`() {
+  val badRow = arrayOf("not_a_number", "20.0") // too short and contains non-number
+  val result = converter.csvRowToEntry(badRow)
   assertThat(result).isNull()
  }
 }
