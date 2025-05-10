@@ -3,6 +3,7 @@ package presentation.ui
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import org.damascus.domain.exception.LocationNotFoundException
 import org.damascus.domain.model.Cloth
 import org.damascus.domain.usecase.GetWeatherUseCase
 import org.damascus.domain.usecase.SuggestClothesUseCase
@@ -21,8 +22,8 @@ class ClothesSuggesterByCityNameCli(
 
     private val loadingScope = CoroutineScope(Dispatchers.Default)
     override suspend fun start() {
-        val cityName = inputReader.readString("🌆 What's your city? ")
-        val countryName = inputReader.readString("🌍 Which country? ")
+        val cityName = readValidInput("🌆 What's your city? ")
+        val countryName = readValidInput("🌍 Which country? ")
 
         showLoading(loadingScope, printer)
 
@@ -42,7 +43,6 @@ class ClothesSuggesterByCityNameCli(
         )
     }
 
-
     private suspend fun suggestClothesByCityAndCountry(
         cityName: String,
         countryName: String,
@@ -56,10 +56,14 @@ class ClothesSuggesterByCityNameCli(
             val clothes = suggestClothesUseCase(dailyWeather)
             onSuccess(clothes)
         } catch (exception: Exception) {
-            onFailure("${exception.message} An unexpected error occurred.".withStyle(TerminalColor.Reset))
+            val message = when (exception) {
+                is LocationNotFoundException -> "Location not found. Please check the spelling."
+                else -> "Unexpected error: ${exception.message}"
+            }
+
+            onFailure(message.withStyle(TerminalColor.Red))
         }
     }
-
 
     private fun showClothingSuggestions(clothes: List<Cloth>) {
         printer.displayLn("\n👚 Based on our high-tech fashion sensors, we suggest:\n".withStyle(TerminalColor.Green))
@@ -69,5 +73,21 @@ class ClothesSuggesterByCityNameCli(
         }
 
         printer.displayLn("\n🕺 Go rule the streets. Or at least your hallway.".withStyle(TerminalColor.Magenta))
+    }
+
+    private fun readValidInput(prompt: String): String {
+        while (true) {
+            val input = inputReader.readString(prompt)
+
+            if (!isValidName(input)) {
+                printer.displayLn("Invalid input! Please enter letters only.".withStyle(TerminalColor.Red))
+            } else {
+                return input
+            }
+        }
+    }
+
+    private fun isValidName(input: String): Boolean {
+        return input.matches(Regex("^[a-zA-Z\\s'-]{2,}$"))
     }
 }
