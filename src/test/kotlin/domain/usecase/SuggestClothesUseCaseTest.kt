@@ -52,10 +52,10 @@ class SuggestClothesUseCaseTest {
 
     @ParameterizedTest
     @CsvSource(
-        "5.0, C",
-        "0.0, C",
-        "41.0, F",
-        "32.0, F"
+        "5.0, °C",
+        "0.0, °C",
+        "41.0, °F",
+        "32.0, °F"
     )
     fun `getClothesByType should return list of type VERY_HEAVY when temperature within very heavy range`(
         temperature: Double,
@@ -73,10 +73,10 @@ class SuggestClothesUseCaseTest {
 
     @ParameterizedTest
     @CsvSource(
-        "12.5, C",
-        "8.0, C",
-        "54.5, F",
-        "46.4, F"
+        "12.5, °C",
+        "8.0, °C",
+        "54.5, °F",
+        "46.4, °F"
     )
     fun `getClothesByType should return list of type HEAVY when temperature within heavy range`(
         temperature: Double,
@@ -94,10 +94,10 @@ class SuggestClothesUseCaseTest {
 
     @ParameterizedTest
     @CsvSource(
-        "20.0, C",
-        "17.0, C",
-        "68.0, F",
-        "62.6, F"
+        "20.0, °C",
+        "17.0, °C",
+        "68.0, °F",
+        "62.6, °F"
     )
     fun `getClothesByType should return list of type MEDIUM when temperature within medium range`(
         temperature: Double,
@@ -115,10 +115,10 @@ class SuggestClothesUseCaseTest {
 
     @ParameterizedTest
     @CsvSource(
-        "28.0, C",
-        "24.0, C",
-        "82.4, F",
-        "75.2, F"
+        "28.0, °C",
+        "24.0, °C",
+        "82.4, °F",
+        "75.2, °F"
     )
     fun `getClothesByType should return list of type LIGHT when temperature within light range`(
         temperature: Double,
@@ -138,7 +138,7 @@ class SuggestClothesUseCaseTest {
     @Test
     fun `getClothesByType should return list of type VERY_LIGHT when temperature within very light range`() {
         // Given
-        val input = createWeatherInfoHelper(32.0, "C")
+        val input = createWeatherInfoHelper(32.0, "°C")
 
         // When
         val result = suggestClothesUseCase(input)
@@ -150,7 +150,7 @@ class SuggestClothesUseCaseTest {
     @Test
     fun `getClothesByType should throw exception when temperature is NAN`() {
         // Given
-        val input = createWeatherInfoHelper(Double.NaN, "C")
+        val input = createWeatherInfoHelper(Double.NaN, "°C")
 
         // When & Then
         assertThrows<IllegalTemperatureException> {
