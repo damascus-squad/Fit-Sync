@@ -14,10 +14,12 @@ class WeatherCacheService(
     private val csvFilePath: String = "csvCache.csv",
     private val converter: WeatherDataConverter = WeatherDataConverter(),
     private val fileOperations: FileOperations = FileOperations(csvFilePath),
-    private val coordinateTolerance: Double = 0.01
+    private val coordinateTolerance: Double = 0.02
 ) {
     private fun findMatchingRowData(locationCoordinate: LocationCoordinate): Array<String>? {
-        if (!fileOperations.fileExists()) { return null }
+        if (!fileOperations.fileExists()) {
+            return null
+        }
         val allRows = fileOperations.readAllRows(true)
 
         return allRows
@@ -45,6 +47,7 @@ class WeatherCacheService(
             }
             .firstOrNull()
     }
+
     fun saveToCache(weatherInfo: WeatherInfo) {
         val csvEntry = converter.weatherInfoToEntry(weatherInfo)
         val rowData = converter.entryToCsvRow(csvEntry)
@@ -57,12 +60,14 @@ class WeatherCacheService(
         }
         fileOperations.appendRow(rowData)
     }
-     fun getFromCache(locationCoordinate: LocationCoordinate): WeatherInfo? {
+
+    fun getFromCache(locationCoordinate: LocationCoordinate): WeatherInfo? {
         val matchingRowData = findMatchingRowData(locationCoordinate) ?: return null
         val csvEntry = converter.csvRowToEntry(matchingRowData) ?: return null
         return converter.entryToWeatherInfo(csvEntry)
     }
-     fun getValidFromCache(locationCoordinate: LocationCoordinate, maxAgeMinutes: Long): WeatherInfo? {
+
+    fun getValidFromCache(locationCoordinate: LocationCoordinate, maxAgeMinutes: Long): WeatherInfo? {
         val matchingRowData = findMatchingRowData(locationCoordinate) ?: return null
         val csvEntry = converter.csvRowToEntry(matchingRowData) ?: return null
 
@@ -72,13 +77,17 @@ class WeatherCacheService(
 
             if (minutesElapsed in 0..<maxAgeMinutes) {
                 converter.entryToWeatherInfo(csvEntry)
+            } else {
+                null
             }
-            else { null }
+        } catch (e: DateTimeParseException) {
+            null
+        } catch (e: Exception) {
+            null
         }
-        catch (e: DateTimeParseException) { null }
-        catch (e: Exception) { null }
     }
-     fun clearCache() {
+
+    fun clearCache() {
         fileOperations.clearContent(CsvWeatherModel.HEADERS.toTypedArray())
     }
 }
