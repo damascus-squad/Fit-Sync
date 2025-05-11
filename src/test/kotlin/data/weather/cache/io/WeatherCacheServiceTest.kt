@@ -39,7 +39,6 @@ class WeatherCacheServiceTest {
         converter = WeatherDataConverter()
         mockkStatic(LocalDateTime::class)
         every { LocalDateTime.now() } returns fixedNow
-        // default: no file, no rows
         every { fileOps.fileExists() } returns false
         every { fileOps.readAllRows(any()) } returns emptyList()
 
@@ -110,7 +109,6 @@ class WeatherCacheServiceTest {
         verify(exactly = 0) { fileOps.writeHeader(any()) }
     }
 
-    // getFromCache tests
     @Test
     fun `getFromCache returns null when file missing`() {
         every { fileOps.fileExists() } returns false

@@ -27,8 +27,6 @@ class FileOperations(
         ensureParentDirectoryExists()
         FileWriter(filePath, append).use { fileWriter ->
             CSVWriter(fileWriter).use { csv ->
-                // comment will deleted next update
-                // why ? -> inject whatever CSV-writing code you need
                 block(csv)
             }
         }

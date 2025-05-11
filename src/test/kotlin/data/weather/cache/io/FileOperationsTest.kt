@@ -87,7 +87,6 @@ class FileOperationsTest {
             val result = fileOperations.readAllRows(false)
             assertThat(result).isEmpty()
         } catch (e: UnsupportedOperationException) {
-            // Skip test on Windows systems that don't support POSIX permissions
         }
     }
 
@@ -197,6 +196,101 @@ class FileOperationsTest {
     fun `clearContent - when file does not exist - without header - creates empty file`() {
         fileOperations.clearContent(null)
         val result = fileOperations.readAllRows(false)
+        assertThat(result).isEmpty()
+    }
+
+
+    @Test
+    fun `constructor - when no filePath is provided - uses default 'csvCache' in CWD and ensureParentDirectoryExists handles null parent`() {
+        val defaultFileName = "csvCache"
+        val fileInWorkingDir = File(defaultFileName)
+
+        try {
+            if (fileInWorkingDir.exists()) {
+                val deleted = fileInWorkingDir.deleteRecursively()
+                if (!deleted) {
+                    System.err.println("Warning: Could not delete existing '$defaultFileName' in CWD before test.")
+                }
+            }
+            assertThat(fileInWorkingDir.exists()).isFalse()
+
+            val defaultFileOps = FileOperations() // Instantiate with default constructor
+            assertThat(defaultFileOps.fileExists()).isFalse()
+
+            val header = arrayOf("default_h1", "default_h2")
+            val writeSuccessful = defaultFileOps.writeHeader(header)
+
+            assertThat(writeSuccessful).isTrue()
+
+            assertThat(defaultFileOps.fileExists()).isTrue()
+            assertThat(fileInWorkingDir.exists()).isTrue()
+            assertThat(fileInWorkingDir.isFile).isTrue()
+
+            val content = defaultFileOps.readAllRows(false)
+            assertThat(content).hasSize(1)
+            assertThat(content[0].toList()).isEqualTo(header.toList())
+
+        } finally {
+            if (fileInWorkingDir.exists()) {
+                fileInWorkingDir.deleteRecursively()
+            }
+        }
+    }
+
+
+
+
+
+
+    @Test
+    fun `write operations - when parent directory does not exist - creates parent directory`() {
+        val subDirName = "newParentDir"
+        val fileName = "fileInNewDir.csv"
+        val filePathWithNewParent = rootTempDir.resolve(subDirName).resolve(fileName).toString()
+        val parentDirFile = rootTempDir.resolve(subDirName).toFile()
+
+        fileOperations = FileOperations(filePathWithNewParent) // Re-init with new path
+
+        assertThat(parentDirFile.exists()).isFalse() // Parent dir should not exist yet
+
+        val header = arrayOf("h1", "h2")
+        fileOperations.writeHeader(header)
+
+        assertThat(parentDirFile.exists()).isTrue()
+        assertThat(parentDirFile.isDirectory).isTrue()
+        assertThat(File(filePathWithNewParent).exists()).isTrue()
+    }
+
+    @Test
+    fun `readAllRows - when file contains rows with less than 2 columns - filters them out`() {
+        createFile()
+        writeCsvLinesToFile(listOf(
+            "header1,header2",
+            "value1",
+            "value2,value3",
+            "",
+            ",value4"
+        ))
+
+        val result = fileOperations.readAllRows(skipHeader = false)
+
+        val expectedRows = listOf(
+            arrayOf("header1", "header2"),
+            arrayOf("value2", "value3"),
+            arrayOf("", "value4")
+        )
+        assertThat(result.map { it.toList() }).isEqualTo(expectedRows.map { it.toList() })
+    }
+
+    @Test
+    fun `readAllRows - when CSV file is malformed causing CsvException - returns emptyList`() {
+        createFile()
+        writeCsvLinesToFile(listOf(
+            "header1,header2",
+            "value1,\"unclosed_quote"
+        ))
+
+        val result = fileOperations.readAllRows(skipHeader = false)
         assertThat(result).isEmpty()
     }
 }
