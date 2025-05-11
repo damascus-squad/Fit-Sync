@@ -7,12 +7,18 @@ import org.damascus.data.location.dataSource.LocationDataSource
 import org.damascus.data.location.dto.IpLocationDto
 import org.damascus.data.weather.cache.io.WeatherCacheService
 import org.damascus.data.weather.datasource.CachedWeatherDataSource
-import org.damascus.data.weather.datasource.IpNotFoundException
 import org.damascus.data.weather.datasource.WeatherDataSource
-import org.damascus.data.weather.dto.*
+import org.damascus.data.weather.dto.CurrentWeatherDto
+import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
+import org.damascus.data.weather.dto.LocationDto
+import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.data.weather.mapper.WeatherDataConverter
-import org.damascus.data.weather.datasource.LocationNotFoundException
-import org.damascus.domain.model.*
+import org.damascus.domain.exception.CountryAndCityNotFoundException
+import org.damascus.domain.exception.IpNotFoundException
+import org.damascus.domain.model.LocationCoordinate
+import org.damascus.domain.model.Weather
+import org.damascus.domain.model.WeatherInfo
+import org.damascus.domain.model.WeatherUnit
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -179,7 +185,7 @@ class CachedWeatherDataSourceTest {
         coEvery { mockLocationDataSource.getCityCoordinates(testCity, testCountry) } returns null
 
         // When & Then
-        assertThrows<LocationNotFoundException> {
+        assertThrows<CountryAndCityNotFoundException> {
             cachedWeatherDataSource.getWeatherByCity(testCity, testCountry)
         }
 

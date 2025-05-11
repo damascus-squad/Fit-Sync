@@ -2,8 +2,10 @@ package org.damascus.data.weather.datasource
 
 import org.damascus.data.location.dataSource.LocationDataSource
 import org.damascus.data.weather.cache.io.WeatherCacheService
-import org.damascus.data.weather.mapper.WeatherDataConverter
 import org.damascus.data.weather.dto.WeatherDto
+import org.damascus.data.weather.mapper.WeatherDataConverter
+import org.damascus.domain.exception.CountryAndCityNotFoundException
+import org.damascus.domain.exception.IpNotFoundException
 import org.damascus.domain.model.LocationCoordinate
 import org.damascus.domain.model.WeatherInfo
 
@@ -17,7 +19,7 @@ class CachedWeatherDataSource(
 
     override suspend fun getWeatherByCity(cityName: String, country: String): WeatherDto {
         val location = locationDataSource.getCityCoordinates(cityName, country)
-            ?: throw LocationNotFoundException(cityName, country)
+            ?: throw CountryAndCityNotFoundException(cityName, country)
         return getCachedWeather(LocationCoordinate(location.latitude, location.longitude))
     }
 
@@ -32,7 +34,8 @@ class CachedWeatherDataSource(
         if (cachedWeatherInfo != null)
             return converter.weatherInfoToDto(cachedWeatherInfo)
 
-        val weatherDtoFromApi = apiClient.getWeatherByCity(locationCoordinate.latitude.toString(), locationCoordinate.longitude.toString())
+        val weatherDtoFromApi =
+            apiClient.getWeatherByCity(locationCoordinate.latitude.toString(), locationCoordinate.longitude.toString())
         val weatherInfoToCache: WeatherInfo = converter.dtoToWeatherInfo(weatherDtoFromApi)
         cacheService.saveToCache(weatherInfoToCache)
         return weatherDtoFromApi
