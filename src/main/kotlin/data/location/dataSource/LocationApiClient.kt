@@ -19,7 +19,14 @@ class LocationApiClient(
         return response.body<LocationResultDto>().results?.firstOrNull()
     }
 
+    override suspend fun searchCity(city: String): List<LocationDto> {
+        val response = client.get {
+            url(GEO_BASE_URL)
+            parameter("name", city)
+        }
 
+        return response.body<LocationResultDto>().results ?: emptyList()
+    }
 
     override suspend fun getCurrentLocation(): IpLocationDto? {
         return client.get(IP_BASE_URL).body()

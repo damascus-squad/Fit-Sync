@@ -1,6 +1,7 @@
 package org.damascus.data.weather.repository
 
 import org.damascus.data.weather.datasource.WeatherDataSource
+import org.damascus.data.weather.dto.LocationDto
 import org.damascus.data.weather.mapper.toDomain
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.repository.WeatherRepository
@@ -17,5 +18,9 @@ class WeatherRepositoryImp(
     override suspend fun getWeatherByIp(): WeatherInfo {
         val dto = dataSource.getWeatherByIp()
         return dto.toDomain()
+    }
+
+    override suspend fun getWeatherBySearch(location: LocationDto): WeatherInfo {
+        return dataSource.getWeatherBySearch(location).toDomain()
     }
 }

@@ -28,6 +28,10 @@ class WeatherApiClient(
         return getWeatherByLocation(ipLocation.toLocationDto())
     }
 
+    override suspend fun getWeatherBySearch(location: LocationDto): WeatherDto {
+        return getWeatherByLocation(location)
+    }
+
     private fun IpLocationDto.toLocationDto(): LocationDto {
         return LocationDto(
             latitude = this.latitude,
