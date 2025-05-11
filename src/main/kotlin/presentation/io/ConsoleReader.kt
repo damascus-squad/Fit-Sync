@@ -10,11 +10,17 @@ class ConsoleReader : InputReader {
         while (true) {
             val input = readln().trim()
 
-            if (input.isEmpty()) {
-                println("❌ Input cannot be empty. Please try again.".withStyle(TerminalColor.Red))
+            if (!isValidName(input)) {
+                println("❌ Invalid input! Please enter letters only.".withStyle(TerminalColor.Red))
                 print("$prompt ".withStyle(TerminalColor.Blue))
-            } else return input
+            } else {
+                return input
+            }
         }
+    }
+
+    private fun isValidName(input: String): Boolean {
+        return input.matches(Regex("^[a-zA-Z\\s'-]{2,}$"))
     }
 
     override fun readInt(prompt: String, min: Int?, max: Int?): Int {

@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import org.damascus.data.location.mapper.toDto
 import org.damascus.data.weather.datasource.WeatherDataSource
 import org.damascus.data.weather.dto.CurrentWeatherDto
 import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
@@ -11,6 +12,7 @@ import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.data.weather.mapper.toDomain
 import org.damascus.data.weather.repository.WeatherRepositoryImp
 import org.damascus.domain.exception.LocationNotFoundException
+import org.damascus.domain.model.Location
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
@@ -23,6 +25,14 @@ class WeatherRepositoryImpTest {
     private lateinit var weatherDataSource: WeatherDataSource
     private lateinit var weatherRepository: WeatherRepositoryImp
 
+    private val location = Location(
+        name = "Cairo",
+        region = "Cairo",
+        country = "EG",
+        latitude = 30.0,
+        longitude = 31.0
+    )
+
     @BeforeEach
     fun setup() {
         weatherDataSource = mockk(relaxed = true)
@@ -33,29 +43,26 @@ class WeatherRepositoryImpTest {
     fun `should return weather info by city when data source succeeds`() = runTest {
         // Given
         val dto = dummyWeatherDto()
-        coEvery { weatherDataSource.getWeatherByCity("Cairo", "EG") } returns dto
+        coEvery { weatherDataSource.getWeatherByCity(location.toDto()) } returns dto
 
         // When
-        val result = weatherRepository.getWeatherByCity("Cairo", "EG")
+        val result = weatherRepository.getWeatherByCity(location)
 
         // Then
         assertThat(result).isEqualTo(dto.toDomain())
     }
 
-
     @Test
     fun `should throw exception when data source fails`() = runTest {
         // Given
+        val unknownLocation = location.copy(name = "Unknown", country = "Unknown")
         coEvery {
-            weatherDataSource.getWeatherByCity(
-                "Unknown",
-                "Unknown"
-            )
+            weatherDataSource.getWeatherByCity(unknownLocation.toDto())
         } throws LocationNotFoundException("City not found")
 
         // When & Then
         assertThrows<LocationNotFoundException> {
-            weatherRepository.getWeatherByCity("Unknown", "Unknown")
+            weatherRepository.getWeatherByCity(unknownLocation)
         }
     }
 
@@ -78,7 +85,7 @@ class WeatherRepositoryImpTest {
         // Given
         coEvery { weatherDataSource.getWeatherByIp() } throws LocationNotFoundException("IP failed")
 
-        // When & Then
+        // When + Then
         assertThrows<LocationNotFoundException> {
             weatherRepository.getWeatherByIp()
         }
@@ -122,10 +129,11 @@ class WeatherRepositoryImpTest {
             )
         )
 
-        coEvery { weatherDataSource.getWeatherByCity("DesertCity", "EG") } returns incompleteDto
+        val desertLocation = location.copy(name = "DesertCity")
+        coEvery { weatherDataSource.getWeatherByCity(desertLocation.toDto()) } returns incompleteDto
 
         // When
-        val result = weatherRepository.getWeatherByCity("DesertCity", "EG")
+        val result = weatherRepository.getWeatherByCity(desertLocation)
 
         // Then
         assertThat(result).isEqualTo(expected)
@@ -138,10 +146,11 @@ class WeatherRepositoryImpTest {
             currentWeatherDto = dummyWeatherDto().currentWeatherDto.copy(isDay = 0)
         )
 
-        coEvery { weatherDataSource.getWeatherByCity("NightCity", "EG") } returns dto
+        val nightLocation = location.copy(name = "NightCity")
+        coEvery { weatherDataSource.getWeatherByCity(nightLocation.toDto()) } returns dto
 
         // When
-        val result = weatherRepository.getWeatherByCity("NightCity", "EG")
+        val result = weatherRepository.getWeatherByCity(nightLocation)
 
         // Then
         assertThat(result.weather.isDay).isFalse()

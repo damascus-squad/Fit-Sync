@@ -11,17 +11,12 @@ class FitSyncApp(
     private val printer: ConsoleDisplay,
     private val inputReader: InputReader,
     private val clothesSuggesterByCityNameCli: ClothesSuggesterByCityNameCli,
-    private val clothesSuggesterByIpCli: ClothesSuggesterByIpCli,
-    private val clothesSuggesterByCitySearchCli: ClothesSuggesterByCitySearchCli
+    private val clothesSuggesterByIpCli: ClothesSuggesterByIpCli
 ) : UILauncher {
 
     override suspend fun start() {
         showMenu(
             uiActionList = listOf(
-                UiAction(
-                    name = "Suggest Clothes Based on search",
-                    action ={clothesSuggesterByCitySearchCli.start()}
-                ),
                 UiAction(
                     name = "🌆 Suggest Clothes Based on City",
                     action = { clothesSuggesterByCityNameCli.start() }

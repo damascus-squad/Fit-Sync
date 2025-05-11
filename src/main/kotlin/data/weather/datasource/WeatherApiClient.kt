@@ -14,10 +14,7 @@ class WeatherApiClient(
     private val locationDataSource: LocationDataSource
 ) : WeatherDataSource {
 
-    override suspend fun getWeatherByCity(cityName: String, country: String): WeatherDto {
-        val location = locationDataSource.getCityCoordinates(cityName, country)
-            ?: throw LocationNotFoundException("City not found: $cityName, $country")
-
+    override suspend fun getWeatherByCity(location: LocationDto): WeatherDto {
         return getWeatherByLocation(location)
     }
 
@@ -26,10 +23,6 @@ class WeatherApiClient(
             ?: throw LocationNotFoundException("Could not determine location from IP")
 
         return getWeatherByLocation(ipLocation.toLocationDto())
-    }
-
-    override suspend fun getWeatherBySearch(location: LocationDto): WeatherDto {
-        return getWeatherByLocation(location)
     }
 
     private fun IpLocationDto.toLocationDto(): LocationDto {

@@ -19,7 +19,6 @@ import org.damascus.domain.repository.ClothesRepository
 import org.damascus.domain.repository.WeatherRepository
 import org.damascus.domain.usecase.*
 import org.damascus.presentation.io.ConsoleDisplay
-import org.damascus.presentation.ui.ClothesSuggesterByCitySearchCli
 import org.damascus.presentation.ui.ClothesSuggesterByIpCli
 import org.damascus.presentation.ui.FitSyncApp
 import org.koin.dsl.module
@@ -51,7 +50,6 @@ val appModule = module {
     single { GetWeatherUseCase(get()) }
     single { SuggestClothesUseCase(get()) }
     single { GetWeatherByIpUseCase(get()) }
-    single { GetWeatherBySearchUseCase(get()) }
     single { SearchCityUseCase(get()) }
 
     //IO
@@ -59,12 +57,11 @@ val appModule = module {
     single<InputReader> { ConsoleReader() }
 
     //UI
-    single { ClothesSuggesterByCityNameCli(get(), get(), get(), get()) }
+    single { ClothesSuggesterByCityNameCli(get(), get(), get(), get(), get()) }
     single { ClothesSuggesterByIpCli(get(), get(), get()) }
-    single { ClothesSuggesterByCitySearchCli(get(), get(), get(), get(), get()) }
 
     //app
-    single { FitSyncApp(get(), get(), get(), get(), get()) }
+    single { FitSyncApp(get(), get(), get(), get()) }
 
 
 }
