@@ -125,13 +125,28 @@ class WeatherCacheServiceTest {
     @Test
     fun `getFromCache returns null when row too short`() {
         every { fileOps.fileExists() } returns true
-        every { fileOps.readAllRows(true) } returns listOf(arrayOf("10.0","20.0"))
+        every { fileOps.readAllRows(true) } returns listOf(arrayOf("10.0", "20.0"))
         assertThat(service.getFromCache(baseLocation)).isNull()
     }
 
     @Test
     fun `getFromCache returns null when lat lon non-numeric`() {
-        val bad = arrayOf("x","y","5","Zone","25","15","180","true","1","t","C","kmh","deg","2023-10-26T10:00:00")
+        val bad = arrayOf(
+            "x",
+            "y",
+            "5",
+            "Zone",
+            "25",
+            "15",
+            "180",
+            "true",
+            "1",
+            "t",
+            "C",
+            "kmh",
+            "deg",
+            "2023-10-26T10:00:00"
+        )
         every { fileOps.fileExists() } returns true
         every { fileOps.readAllRows(true) } returns listOf(bad)
         assertThat(service.getFromCache(baseLocation)).isNull()
@@ -139,7 +154,7 @@ class WeatherCacheServiceTest {
 
     @Test
     fun `getFromCache returns null when out of tolerance`() {
-        val far = baseWeather.copy(latitude=999.0, longitude=999.0)
+        val far = baseWeather.copy(latitude = 999.0, longitude = 999.0)
         val row = converter.entryToCsvRow(converter.weatherInfoToEntry(far))
         every { fileOps.fileExists() } returns true
         every { fileOps.readAllRows(true) } returns listOf(row)
@@ -148,7 +163,7 @@ class WeatherCacheServiceTest {
 
     @Test
     fun `getFromCache returns WeatherInfo when exact or near match`() {
-        val near = baseWeather.copy(latitude=10.005, longitude=19.995)
+        val near = baseWeather.copy(latitude = 10.005, longitude = 19.995)
         val ts = fixedNow.format(DateTimeFormatter.ISO_DATE_TIME)
         val row = converter.entryToCsvRow(converter.weatherInfoToEntry(near, ts))
         every { fileOps.fileExists() } returns true

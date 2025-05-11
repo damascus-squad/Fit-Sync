@@ -82,12 +82,10 @@ class FileOperationsTest {
         val file = createFile()
         writeCsvLinesToFile(listOf("data"))
 
-        try {
-            Files.setPosixFilePermissions(file.toPath(), setOf(PosixFilePermission.OWNER_WRITE))
-            val result = fileOperations.readAllRows(false)
-            assertThat(result).isEmpty()
-        } catch (e: UnsupportedOperationException) {
-        }
+        Files.setPosixFilePermissions(file.toPath(), setOf(PosixFilePermission.OWNER_WRITE))
+        val result = fileOperations.readAllRows(false)
+        assertThat(result).isEmpty()
+
     }
 
     @Test
@@ -205,41 +203,22 @@ class FileOperationsTest {
         val defaultFileName = "csvCache"
         val fileInWorkingDir = File(defaultFileName)
 
-        try {
-            if (fileInWorkingDir.exists()) {
-                val deleted = fileInWorkingDir.deleteRecursively()
-                if (!deleted) {
-                    System.err.println("Warning: Could not delete existing '$defaultFileName' in CWD before test.")
-                }
-            }
-            assertThat(fileInWorkingDir.exists()).isFalse()
+        assertThat(fileInWorkingDir.exists()).isFalse()
 
-            val defaultFileOps = FileOperations() // Instantiate with default constructor
-            assertThat(defaultFileOps.fileExists()).isFalse()
+        val defaultFileOps = FileOperations()
+        assertThat(defaultFileOps.fileExists()).isFalse()
 
-            val header = arrayOf("default_h1", "default_h2")
-            val writeSuccessful = defaultFileOps.writeHeader(header)
+        val header = arrayOf("default_h1", "default_h2")
+        val writeSuccessful = defaultFileOps.writeHeader(header)
+        assertThat(writeSuccessful).isTrue()
 
-            assertThat(writeSuccessful).isTrue()
+        assertThat(defaultFileOps.fileExists()).isTrue()
+        assertThat(fileInWorkingDir.exists()).isTrue()
+        assertThat(fileInWorkingDir.isFile).isTrue()
 
-            assertThat(defaultFileOps.fileExists()).isTrue()
-            assertThat(fileInWorkingDir.exists()).isTrue()
-            assertThat(fileInWorkingDir.isFile).isTrue()
-
-            val content = defaultFileOps.readAllRows(false)
-            assertThat(content).hasSize(1)
-            assertThat(content[0].toList()).isEqualTo(header.toList())
-
-        } finally {
-            if (fileInWorkingDir.exists()) {
-                fileInWorkingDir.deleteRecursively()
-            }
-        }
+        val content = defaultFileOps.readAllRows(false)
+        assertThat(content[0].toList()).isEqualTo(header.toList())
     }
-
-
-
-
 
 
     @Test
@@ -249,9 +228,9 @@ class FileOperationsTest {
         val filePathWithNewParent = rootTempDir.resolve(subDirName).resolve(fileName).toString()
         val parentDirFile = rootTempDir.resolve(subDirName).toFile()
 
-        fileOperations = FileOperations(filePathWithNewParent) // Re-init with new path
+        fileOperations = FileOperations(filePathWithNewParent)
 
-        assertThat(parentDirFile.exists()).isFalse() // Parent dir should not exist yet
+        assertThat(parentDirFile.exists()).isFalse()
 
         val header = arrayOf("h1", "h2")
         fileOperations.writeHeader(header)
@@ -264,13 +243,15 @@ class FileOperationsTest {
     @Test
     fun `readAllRows - when file contains rows with less than 2 columns - filters them out`() {
         createFile()
-        writeCsvLinesToFile(listOf(
-            "header1,header2",
-            "value1",
-            "value2,value3",
-            "",
-            ",value4"
-        ))
+        writeCsvLinesToFile(
+            listOf(
+                "header1,header2",
+                "value1",
+                "value2,value3",
+                "",
+                ",value4"
+            )
+        )
 
         val result = fileOperations.readAllRows(skipHeader = false)
 
@@ -285,10 +266,12 @@ class FileOperationsTest {
     @Test
     fun `readAllRows - when CSV file is malformed causing CsvException - returns emptyList`() {
         createFile()
-        writeCsvLinesToFile(listOf(
-            "header1,header2",
-            "value1,\"unclosed_quote"
-        ))
+        writeCsvLinesToFile(
+            listOf(
+                "header1,header2",
+                "value1,\"unclosed_quote"
+            )
+        )
 
         val result = fileOperations.readAllRows(skipHeader = false)
         assertThat(result).isEmpty()

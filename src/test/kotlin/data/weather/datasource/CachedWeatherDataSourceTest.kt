@@ -34,7 +34,7 @@ class CachedWeatherDataSourceTest {
     private val testCity = "Cairo"
     private val testCountry = "EG"
     private val testCityLocation = LocationDto(10.0, 20.0)
-    private val testIpLocation = IpLocationDto(10.0, 20.0) // Changed to IpLocationDto
+    private val testIpLocation = IpLocationDto(10.0, 20.0)
     private val cacheDuration = 30L
 
     private val weatherInfoFromCache = WeatherInfo(

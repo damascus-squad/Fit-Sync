@@ -9,11 +9,10 @@ import java.io.FileWriter
 import java.io.IOException
 
 class FileOperations(
-    private val filePath: String= "csvCache"
+    private val filePath: String = "csvCache"
 ) {
     private fun file(): File = File(filePath)
 
-    // new 2 helper fun
     private fun ensureParentDirectoryExists() {
         file().parentFile
             ?.takeIf { !it.exists() }
@@ -34,7 +33,6 @@ class FileOperations(
     } catch (e: IOException) {
         false
     }
-
 
     fun fileExists(): Boolean = file().exists()
 
@@ -78,7 +76,5 @@ class FileOperations(
                 throw e
             }
         }
-
     }
-
 }
