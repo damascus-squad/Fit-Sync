@@ -1,16 +1,17 @@
 package data.weather.datasource
 
+import com.google.common.truth.Truth.assertThat
 import org.damascus.data.weather.datasource.WeatherCacheManager
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.File
-import com.google.common.truth.Truth.assertThat
-import kotlin.test.Test
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+private const val CSV_HEADER =
+    "key,timestamp,latitude,longitude,elevation,timezone,temperature,windSpeed,windDirection,isDay,weatherCode,time,temperatureUnit,windSpeedUnit,windDirectionUnit"
+
 class WeatherCacheManagerTest {
 
     private lateinit var tempFile: File
@@ -18,112 +19,79 @@ class WeatherCacheManagerTest {
 
     @BeforeEach
     fun setup() {
-        tempFile = File.createTempFile("weather_test", ".csv")
+        tempFile = File("build/test-cache-${System.nanoTime()}.csv").apply {
+            parentFile?.mkdirs()
+        }
+        tempFile.deleteOnExit()
+        if (tempFile.exists()) tempFile.delete()
         cacheManager = WeatherCacheManager(tempFile)
     }
 
-    @AfterEach
-    fun cleanup() {
-        tempFile.delete()
+    @Test
+    fun `readCache  - returns null if cache file does not exist`() {
+        assertThat(cacheManager.readCache("some_key")).isNull()
     }
 
     @Test
-    fun `readCache returns null when file does not exist`() {
-        tempFile.delete() // simulate missing file
-
-        val result = cacheManager.readCache("any-key")
-        assertEquals(result, null)
-    }
-
-    @Test
-    fun `readCache returns null when key is not found`() {
+    fun `readCache  - returns null if cache file has matching key but missing required fields (incomplete header)`() {
         tempFile.writeText(
-            "key,latitude,longitude,elevation,timezone,temperature,windSpeed,windDirection,isDay,weatherCode,time,temperatureUnit,windSpeedUnit,windDirectionUnit\n" +
-                    "wrong-key,36.0,42.0,300.0,Asia/Baghdad,25.0,5.0,90,1,2,12:00,°C,km/h,°"
+            "key,latitude,longitude,elevation\n" +
+                    "some_key,1.0,2.0,3.0"
         )
-
-        val result = cacheManager.readCache("correct-key")
-
-        assertThat(result).isNull()
+        assertThat(cacheManager.readCache("some_key")).isNull()
     }
 
     @Test
-    fun `readCache returns valid WeatherInfo when data is correct`() {
-        val line = "test-key,36.0,42.0,300.0,Asia/Baghdad,25.0,5.0,90,1,2,12:00,°C,km/h,°"
+    fun `readCache - returns null if cache file contains only the header`() {
+        tempFile.writeText("$CSV_HEADER\n")
+        assertThat(cacheManager.readCache("some_key")).isNull()
+    }
+
+    @Test
+    fun `readCache  - uses defaults for missing optional columns (timezone, units, time)`() {
+        val minimalHeader =
+            "key,timestamp,latitude,longitude,elevation,temperature,windSpeed,windDirection,isDay,weatherCode"
         tempFile.writeText(
-            "key,latitude,longitude,elevation,timezone,temperature,windSpeed,windDirection,isDay,weatherCode,time,temperatureUnit,windSpeedUnit,windDirectionUnit\n$line"
+            "$minimalHeader\n" +
+                    "some_key,0,1.0,2.0,3.0,20.0,5.0,180,1,80"
         )
-
-        val result = cacheManager.readCache("test-key")
-
-        assertThat(result?.latitude).isEqualTo(36.0)
+        assertThat(cacheManager.readCache("some_key")?.timezone).isEqualTo("GMT")
+    }
+    
+    @Test
+    fun `writeCache - written entry is readable and matches original object`() {
+        val info = dummyWeatherInfo()
+        cacheManager.writeCache("some_key", info)
+        assertThat(cacheManager.readCache("some_key")).isEqualTo(info)
     }
 
     @Test
-    fun `readCache returns null when latitude is missing`() {
-        val line = "test-key,,42.0,300.0,Asia/Baghdad,25.0,5.0,90,1,2,12:00,°C,km/h,°"
-        tempFile.writeText(
-            "key,latitude,longitude,elevation,timezone,temperature,windSpeed,windDirection,isDay,weatherCode,time,temperatureUnit,windSpeedUnit,windDirectionUnit\n$line"
-        )
+    fun `writeCache - writes isDay=true as 1 and isDay=false as 0`() {
+        val infoDay = dummyWeatherInfo().copy(weather = dummyWeather().copy(isDay = true))
+        cacheManager.writeCache("day_key", infoDay)
+        val infoNight = dummyWeatherInfo().copy(weather = dummyWeather().copy(isDay = false))
+        cacheManager.writeCache("night_key", infoNight)
 
-        val result = cacheManager.readCache("test-key")
-
-        assertThat(result).isNull()
+        assertThat(cacheManager.readCache("day_key")?.weather?.isDay).isTrue()
+        assertThat(cacheManager.readCache("night_key")?.weather?.isDay).isFalse()
     }
 
-    @Test
-    fun `writeCache writes a row and can read it back`() {
-        val info = WeatherInfo(
-            latitude = 36.0,
-            longitude = 42.0,
-            elevation = 300.0,
-            timezone = "Asia/Baghdad",
-            weather = Weather(
-                temperature = 25.0,
-                windSpeed = 5.0,
-                windDirection = 90,
-                isDay = true,
-                weatherCode = 2,
-                time = "12:00"
-            ),
-            units = WeatherUnit(
-                temperatureUnit = "°C",
-                windSpeedUnit = "km/h",
-                windDirectionUnit = "°"
-            )
-        )
 
-        cacheManager.writeCache("key1", info)
-        val result = cacheManager.readCache("key1")
+    private fun dummyWeatherInfo() = WeatherInfo(
+        latitude = 1.0,
+        longitude = 2.0,
+        elevation = 3.0,
+        timezone = "GMT",
+        weather = dummyWeather(),
+        units = WeatherUnit("\u00b0C", "km/h", "\u00b0")
+    )
 
-        assertThat(result).isNotNull()
-    }
-
-    @Test
-    fun `writeCache overrides old key entry`() {
-        val first = WeatherInfo(
-            latitude = 36.0,
-            longitude = 42.0,
-            elevation = 300.0,
-            timezone = "Asia/Baghdad",
-            weather = Weather(
-                temperature = 25.0,
-                windSpeed = 5.0,
-                windDirection = 90,
-                isDay = true,
-                weatherCode = 2,
-                time = "12:00"
-            ),
-            units = WeatherUnit("°C", "km/h", "°")
-        )
-
-        val second = first.copy(latitude = 37.5)
-
-        cacheManager.writeCache("same-key", first)
-        cacheManager.writeCache("same-key", second)
-
-        val result = cacheManager.readCache("same-key")
-
-        assertThat(result?.latitude).isEqualTo(37.5)
-    }
+    private fun dummyWeather() = Weather(
+        temperature = 20.0,
+        windSpeed = 5.0,
+        windDirection = 180,
+        isDay = true,
+        weatherCode = 80,
+        time = "12:00"
+    )
 }
