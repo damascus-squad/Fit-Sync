@@ -7,14 +7,17 @@ import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.model.WeatherUnit
 import java.io.File
 
-
 class WeatherCacheManager(private val cacheFile: File) {
+
+    private data class CacheEntry(val data: Map<String, String>) {
+        val key: String? get() = data["key"]
+    }
 
     fun readCache(key: String): WeatherInfo? {
         if (!cacheFile.exists()) return null
-// suggestion : change map from map to cache entry
-        val rows = csvReader().readAllWithHeader(cacheFile)
-        val row = rows.find { it["key"] == key } ?: return null
+
+        val rows = csvReader().readAllWithHeader(cacheFile).map { CacheEntry(it) }
+        val row = rows.find { it.key == key }?.data ?: return null
 
         return try {
             WeatherInfo(
@@ -48,8 +51,6 @@ class WeatherCacheManager(private val cacheFile: File) {
             rows += csvReader().readAllWithHeader(cacheFile).filterNot { it["key"] == key }
         }
 
-
-        // enum => if timestamp <-> key ❌
         val newRow = mapOf(
             "key" to key,
             "timestamp" to System.currentTimeMillis().toString(),
@@ -71,7 +72,7 @@ class WeatherCacheManager(private val cacheFile: File) {
         rows += newRow
 
         csvWriter().writeAll(
-            listOf(rows.first().keys.toList()) + rows.map { it.values.toList() },
+            listOf(newRow.keys.toList()) + rows.map { it.values.toList() },
             cacheFile
         )
     }

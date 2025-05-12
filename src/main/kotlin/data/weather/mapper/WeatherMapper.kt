@@ -1,5 +1,7 @@
 package org.damascus.data.weather.mapper
 
+import org.damascus.data.weather.dto.CurrentWeatherDto
+import org.damascus.data.weather.dto.CurrentWeatherUnitsDto
 import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.domain.model.Weather
 import org.damascus.domain.model.WeatherInfo
@@ -27,6 +29,38 @@ fun WeatherDto.toDomain(): WeatherInfo {
     )
 
 }
+
+
+fun WeatherInfo.toDto(): WeatherDto {
+    return WeatherDto(
+        latitude = latitude,
+        longitude = longitude,
+        generationTimeMs = 0.0,
+        utcOffsetSeconds = 0,
+        timezone = timezone,
+        timezoneAbbreviation = "",
+        elevation = elevation,
+        currentWeatherUnitsDto = CurrentWeatherUnitsDto(
+            time = units.temperatureUnit.ifBlank { "°C" },
+            interval = units.windSpeedUnit.ifBlank { "km/h" },
+            temperature = units.temperatureUnit.ifBlank { "°C" },
+            windSpeed = units.windSpeedUnit.ifBlank { "km/h" },
+            windDirection = units.windDirectionUnit.ifBlank { "°" },
+            isDay = "bool",
+            weatherCode = "int"
+        ),
+        currentWeatherDto = CurrentWeatherDto(
+            temperature = weather.temperature,
+            windSpeed = weather.windSpeed,
+            time = weather.time.ifBlank { "" },
+            interval = 1,
+            windDirection = weather.windDirection,
+            isDay = if (weather.isDay) 1 else 0,
+            weatherCode = weather.weatherCode
+        )
+    )
+}
+
 fun getWeatherDescription(code: Int): String {
     return when (code) {
         0 -> "Clear sky"

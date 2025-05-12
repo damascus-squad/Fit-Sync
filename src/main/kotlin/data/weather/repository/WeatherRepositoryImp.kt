@@ -29,17 +29,8 @@ class WeatherRepositoryImp(
     }
 
     override suspend fun getWeatherByIp(): WeatherInfo {
-        val cacheKey = "by_ip"
-        val cachedData = cacheManager.readCache(cacheKey)
-
-        return if (cachedData != null) {
-            cachedData
-        } else {
             val dto = dataSource.getWeatherByIp()
-            val freshData = dto.toDomain()
-            cacheManager.writeCache(cacheKey, freshData)
-            freshData
+            return dto.toDomain()
         }
-    }
 
 }
