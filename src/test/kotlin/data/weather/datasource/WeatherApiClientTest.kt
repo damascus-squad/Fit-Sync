@@ -86,10 +86,17 @@ class WeatherApiClientTest {
     @Test
     fun `should return WeatherDto when city is valid`() = runTest {
         // Given
+        val location = LocationDto(
+            name = "Cairo",
+            region = "Cairo",
+            country = "EG",
+            latitude = 30.0444,
+            longitude = 31.2357
+        )
         coEvery { locationDataSource.getCityCoordinates("Cairo", "EG") } returns LocationDto(30.0, 31.0)
 
         // When
-        val result = apiClient.getWeatherByCity("Cairo", "EG")
+        val result = apiClient.getWeatherByCity(location)
 
         // Then
         assertEquals(
@@ -98,20 +105,6 @@ class WeatherApiClientTest {
 
             ), actual = LocationDto(result.latitude, result.longitude)
         )
-    }
-
-    @Test
-    fun `should throw exception when city is invalid`() = runTest {
-        // Given
-        coEvery { locationDataSource.getCityCoordinates("UnknownCity", "XX") } returns null
-
-        // When
-        val exception = assertFailsWith<LocationNotFoundException> {
-            apiClient.getWeatherByCity("UnknownCity", "XX")
-        }
-
-        // Then
-        assertThat(exception.message).isEqualTo("City not found: UnknownCity, XX")
     }
 
     @Test
@@ -236,26 +229,6 @@ class WeatherApiClientTest {
 
         // When
         val result = apiClient.getWeatherByIp()
-
-        // Then
-        assertEquals(LocationDto(30.0, 31.0), LocationDto(result.latitude, result.longitude))
-    }
-
-    @Test
-    fun `should return WeatherDto with real LocationApiClient`() = runTest {
-        // Given
-        val geoJson = """
-        {
-            "results": [ { "latitude": 30.0, "longitude": 31.0 } ]
-        }
-    """.trimIndent()
-        val locationClient = createMockClient(geoJson)
-        val weatherClient = createMockClient(dummyWeatherJson)
-        val locationDataSource = LocationApiClient(locationClient)
-        val apiClient = WeatherApiClient(weatherClient, locationDataSource)
-
-        // When
-        val result = apiClient.getWeatherByCity("Cairo", "EG")
 
         // Then
         assertEquals(LocationDto(30.0, 31.0), LocationDto(result.latitude, result.longitude))
