@@ -71,11 +71,11 @@ class FitSyncAppTest {
     @Test
     fun `Exit action should print exit message`() = runTest {
         // given
-        val exitAppMethod = fitSyncApp::class.java.getDeclaredMethod("exitApp")
-        exitAppMethod.isAccessible = true
+        every { inputReader.readInt(any(), any(), any()) } returns 3
+        every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(3, 0)
 
         // when
-        exitAppMethod.invoke(fitSyncApp)
+        fitSyncApp.start()
 
         // then
         verify {
