@@ -42,8 +42,8 @@ val appModule = module {
     }
     single<ClothesDataSource> { ClothesDataSourceImp() }
     single<LocationDataSource> { LocationApiClient(get()) }
-    single<WeatherDataSource> { WeatherApiClient(get(), get()) }
-    single<WeatherRepository> { WeatherRepositoryImp(get()) }
+    single<WeatherDataSource> { WeatherApiClient(get(), get(), get()) }
+    single<WeatherRepository> { WeatherRepositoryImp(get(), get()) }
     single<ClothesRepository> { ClothesRepositoryImpl(get()) }
     single<LocationRepository> { LocationRepositoryImpl(get()) }
 
