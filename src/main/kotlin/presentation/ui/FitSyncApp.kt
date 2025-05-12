@@ -53,7 +53,7 @@ class FitSyncApp(
                 )
 
                 if (input == 0) {
-                    println("\n👋 Exiting... Stay fashionable!".withStyle(TerminalColor.Green))
+                    printer.displayLn("\n👋 Exiting... Stay fashionable!".withStyle(TerminalColor.Green))
                     return
                 }
 

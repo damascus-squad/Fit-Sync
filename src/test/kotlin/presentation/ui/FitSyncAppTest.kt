@@ -97,8 +97,6 @@ class FitSyncAppTest {
     @Test
     fun `test selecting multiple options sequentially`() = runTest {
         //given
-        coEvery { clothesSuggesterByCityNameCli.start() } just Runs
-        coEvery { clothesSuggesterByIpCli.start() } just Runs
         every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(1, 2, 0)
 
         //when
@@ -113,7 +111,6 @@ class FitSyncAppTest {
     @Test
     fun `test suggest clothes by city is called when option 1 selected`() = runTest {
         //given
-        coEvery { clothesSuggesterByCityNameCli.start() } just Runs
         every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(1, 0)
 
         //when
@@ -129,7 +126,6 @@ class FitSyncAppTest {
     @Test
     fun `test suggest clothes by IP is called when option 2 selected`() = runTest {
         //given
-        coEvery { clothesSuggesterByIpCli.start() } just Runs
         every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(2, 0)
 
         //when
@@ -144,8 +140,6 @@ class FitSyncAppTest {
     fun `start should execute UiAction when valid input is given`() = runTest {
         //given
         every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(1, 0)
-        every { consoleDisplay.displayLn(any()) } just Runs
-        coEvery { clothesSuggesterByCityNameCli.start() } just Runs
 
         // when
         fitSyncApp.start()
@@ -153,6 +147,8 @@ class FitSyncAppTest {
         // then
         coVerify(exactly = 1) { clothesSuggesterByCityNameCli.start() }
     }
+
+
 
 
 }
