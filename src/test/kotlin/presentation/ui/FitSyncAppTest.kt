@@ -1,6 +1,9 @@
 package presentation.ui
 
-import io.mockk.*
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.damascus.presentation.io.ConsoleDisplay
 import org.damascus.presentation.ui.ClothesSuggesterByIpCli
@@ -82,7 +85,7 @@ class FitSyncAppTest {
 
 
     @Test
-    fun `test out of range input handled correctly`() = runTest {
+    fun `should  handle out of range input correctly`() = runTest {
         //given
         every { inputReader.readInt(any(), 0, 3) } returnsMany listOf(99, 0)
 
@@ -95,7 +98,7 @@ class FitSyncAppTest {
 
 
     @Test
-    fun `test selecting multiple options sequentially`() = runTest {
+    fun `should select multiple options sequentially`() = runTest {
         //given
         every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(1, 2, 0)
 
@@ -109,7 +112,7 @@ class FitSyncAppTest {
 
 
     @Test
-    fun `test suggest clothes by city is called when option 1 selected`() = runTest {
+    fun `should suggest clothes by city is called when option 1 selected`() = runTest {
         //given
         every { inputReader.readInt(any(), any(), any()) } returnsMany listOf(1, 0)
 
@@ -147,9 +150,6 @@ class FitSyncAppTest {
         // then
         coVerify(exactly = 1) { clothesSuggesterByCityNameCli.start() }
     }
-
-
-
 
 }
 
