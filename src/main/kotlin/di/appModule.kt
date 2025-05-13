@@ -13,6 +13,7 @@ import org.damascus.data.location.dataSource.LocationDataSource
 import org.damascus.data.location.repository.LocationRepository
 import org.damascus.data.location.repository.LocationRepositoryImpl
 import org.damascus.data.weather.datasource.WeatherApiClient
+import org.damascus.data.weather.datasource.WeatherCacheManager
 import org.damascus.data.weather.datasource.WeatherDataSource
 import org.damascus.data.weather.repository.WeatherRepositoryImp
 import org.damascus.domain.repository.ClothesRepository
@@ -26,6 +27,7 @@ import presentation.io.ConsolePrinter
 import presentation.io.ConsoleReader
 import presentation.io.InputReader
 import presentation.ui.ClothesSuggesterByCityNameCli
+import java.io.File
 
 
 val appModule = module {
@@ -62,6 +64,11 @@ val appModule = module {
 
     //app
     single { FitSyncApp(get(), get(), get(), get()) }
+
+    single {
+        val cacheFile: File = File("weather_cache.csv")
+        WeatherCacheManager(cacheFile)
+    }
 
 
 }
