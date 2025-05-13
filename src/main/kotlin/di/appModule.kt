@@ -66,7 +66,7 @@ val appModule = module {
     single { FitSyncApp(get(), get(), get(), get()) }
 
     single {
-        val cacheFile: File = File("weather_cache.csv")
+        val cacheFile = File("weather_cache.csv")
         WeatherCacheManager(cacheFile)
     }
 

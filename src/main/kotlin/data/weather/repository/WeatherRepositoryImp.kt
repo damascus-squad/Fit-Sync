@@ -8,7 +8,6 @@ import org.damascus.domain.model.WeatherInfo
 import org.damascus.domain.repository.WeatherRepository
 import org.damascus.data.weather.datasource.WeatherCacheManager
 
-
 class WeatherRepositoryImp(
     private val dataSource: WeatherDataSource,
     private val cacheManager: WeatherCacheManager
@@ -29,8 +28,20 @@ class WeatherRepositoryImp(
     }
 
     override suspend fun getWeatherByIp(): WeatherInfo {
+        return try {
             val dto = dataSource.getWeatherByIp()
-            return dto.toDomain()
+            val domain = dto.toDomain()
+
+            cacheManager.writeCache("ip_last", domain)
+
+            domain
+        } catch (e: Exception) {
+            try {
+                cacheManager.readCache("ip_last") ?: throw e
+            } catch (cacheException: Exception) {
+                throw e
+            }
         }
+    }
 
 }

@@ -157,17 +157,21 @@ class WeatherRepositoryImpTest {
         coVerify(exactly = 1) { dataSource.getWeatherByIp() }
     }
 
+
     @Test
-    fun `getWeatherByIp should propagate exceptions from dataSource`() = runTest {
-        val dataSourceException = IOException("IP service error")
+    fun `getWeatherByIp should return cached data if data source fails but cache has data`() = runTest {
+        val dataSourceException = IOException("Data source failure")
+
         coEvery { dataSource.getWeatherByIp() } throws dataSourceException
+        coEvery { cacheManager.readCache("ip_last") } returns dummyWeatherInfo
 
-        val thrownException = assertThrows<IOException> {
-            weatherRepository.getWeatherByIp()
-        }
+        val result = weatherRepository.getWeatherByIp()
 
-        assertThat(thrownException).isEqualTo(dataSourceException)
+        assertThat(result).isEqualTo(dummyWeatherInfo)
         coVerify(exactly = 1) { dataSource.getWeatherByIp() }
+        coVerify(exactly = 1) { cacheManager.readCache("ip_last") }
+        coVerify(exactly = 0) { cacheManager.writeCache(any(), any()) }
     }
+
 
 }

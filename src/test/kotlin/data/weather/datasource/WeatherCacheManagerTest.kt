@@ -57,7 +57,7 @@ class WeatherCacheManagerTest {
         )
         assertThat(cacheManager.readCache("some_key")?.timezone).isEqualTo("GMT")
     }
-    
+
     @Test
     fun `writeCache - written entry is readable and matches original object`() {
         val info = dummyWeatherInfo()
@@ -75,7 +75,6 @@ class WeatherCacheManagerTest {
         assertThat(cacheManager.readCache("day_key")?.weather?.isDay).isTrue()
         assertThat(cacheManager.readCache("night_key")?.weather?.isDay).isFalse()
     }
-
 
     private fun dummyWeatherInfo() = WeatherInfo(
         latitude = 1.0,
