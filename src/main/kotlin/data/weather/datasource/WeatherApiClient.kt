@@ -9,12 +9,11 @@ import org.damascus.data.weather.dto.WeatherDto
 import org.damascus.data.weather.mapper.toDomain
 import org.damascus.data.weather.mapper.toDto
 import org.damascus.domain.exception.LocationNotFoundException
-import java.io.File
 
 class WeatherApiClient(
     private val client: HttpClient,
     private val locationDataSource: LocationDataSource,
-    private val cacheManager: WeatherCacheManager = WeatherCacheManager(File("weatherCache.csv"))
+    private val cacheManager: WeatherCacheManager
 ) : WeatherDataSource {
 
     override suspend fun getWeatherByCity(location: LocationDto): WeatherDto {
