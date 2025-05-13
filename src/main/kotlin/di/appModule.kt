@@ -21,14 +21,13 @@ import org.damascus.domain.repository.WeatherRepository
 import org.damascus.domain.usecase.*
 import org.damascus.presentation.io.ConsoleDisplay
 import org.damascus.presentation.ui.ClothesSuggesterByIpCli
-import org.damascus.presentation.ui.FitSyncApp
 import org.koin.dsl.module
 import presentation.io.ConsolePrinter
 import presentation.io.ConsoleReader
 import presentation.io.InputReader
 import presentation.ui.ClothesSuggesterByCityNameCli
 import java.io.File
-
+import presentation.ui.FitSyncApp
 
 val appModule = module {
     single {
