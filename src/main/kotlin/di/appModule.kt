@@ -13,6 +13,7 @@ import org.damascus.data.location.dataSource.LocationDataSource
 import org.damascus.data.location.repository.LocationRepository
 import org.damascus.data.location.repository.LocationRepositoryImpl
 import org.damascus.data.weather.datasource.WeatherApiClient
+import org.damascus.data.weather.datasource.WeatherCacheManager
 import org.damascus.data.weather.datasource.WeatherDataSource
 import org.damascus.data.weather.repository.WeatherRepositoryImp
 import org.damascus.domain.repository.ClothesRepository
@@ -25,8 +26,8 @@ import presentation.io.ConsolePrinter
 import presentation.io.ConsoleReader
 import presentation.io.InputReader
 import presentation.ui.ClothesSuggesterByCityNameCli
+import java.io.File
 import presentation.ui.FitSyncApp
-
 
 val appModule = module {
     single {
@@ -42,8 +43,8 @@ val appModule = module {
     }
     single<ClothesDataSource> { ClothesDataSourceImp() }
     single<LocationDataSource> { LocationApiClient(get()) }
-    single<WeatherDataSource> { WeatherApiClient(get(), get()) }
-    single<WeatherRepository> { WeatherRepositoryImp(get()) }
+    single<WeatherDataSource> { WeatherApiClient(get(), get(), get()) }
+    single<WeatherRepository> { WeatherRepositoryImp(get(), get()) }
     single<ClothesRepository> { ClothesRepositoryImpl(get()) }
     single<LocationRepository> { LocationRepositoryImpl(get()) }
 
@@ -62,6 +63,11 @@ val appModule = module {
 
     //app
     single { FitSyncApp(get(), get(), get(), get()) }
+
+    single {
+        val cacheFile = File("weather_cache.csv")
+        WeatherCacheManager(cacheFile)
+    }
 
 
 }
